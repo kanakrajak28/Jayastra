@@ -14,10 +14,10 @@ DOMAIN = 'https://www.jayastra.com'
 esb = shutil.which('esbuild') or '/opt/npm-tools/node_modules/esbuild/bin/esbuild'
 if not pathlib.Path(esb).exists():
     esb = None
-r = subprocess.run(([esb] if esb else ['npx', '--yes', 'esbuild@0.24.0']) + [ str(src / 'app.jsx'), '--loader:.jsx=jsx', '--jsx=transform',
+r = subprocess.run(([esb] if esb else ['npx', '--yes', 'esbuild@0.24.0']) + [ str(src / 'main.jsx'), '--bundle', '--loader:.jsx=jsx', '--jsx=transform',
                     '--jsx-factory=React.createElement', '--jsx-fragment=React.Fragment',
                     '--format=iife', '--target=es2018', '--charset=utf8', '--minify'],
-                   capture_output=True, text=True, shell=(sys.platform == 'win32'))
+                   capture_output=True, text=True, encoding='utf-8', shell=(sys.platform == 'win32'))
 if r.returncode != 0:
     print(r.stderr); sys.exit(1)
 js = r.stdout.replace('</script', '<\\/script')
@@ -30,8 +30,8 @@ preview = shell.replace('/*__APP__*/', js).replace('/*__LOGOS__*/', 'window.__LO
 (out / 'index.html').write_text(preview, encoding='utf-8')
 (src / 'app.compiled.js').write_text(js, encoding='utf-8')
 
-# ---------- 2. route data parsed from the app source ----------
-app = (src / 'app.jsx').read_text(encoding='utf-8')
+# ---------- 2. route data parsed from the app source (all modules under src/) ----------
+app = '\n'.join(p.read_text(encoding='utf-8') for p in sorted(src.rglob('*.js*')) if p.name != 'app.compiled.js')
 slugs = re.search(r"const SECTOR_SLUGS = \[([^\]]*)\]", app).group(1)
 slugs = re.findall(r"'([\w-]+)'", slugs)
 inds = re.findall(r"\{ name: '((?:[^'\\]|\\.)*)', photo: '([\w-]+)', text: '((?:[^'\\]|\\.)*)'", app)
