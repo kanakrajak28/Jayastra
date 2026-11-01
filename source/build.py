@@ -11,13 +11,10 @@ from datetime import date
 root = pathlib.Path(__file__).parent
 src, out, dep = root / 'src', root / 'site', root.parent / 'Jayastra'  # Vercel serves the Jayastra folder
 DOMAIN = 'https://www.jayastra.com'
-# React, Framer Motion and Lenis are bundled from node_modules (package.json); install them on first build
-if not (root / 'node_modules' / 'react').exists():
-    subprocess.run(['npm', 'install'], cwd=root, check=True, shell=(sys.platform == 'win32'))
 esb = shutil.which('esbuild') or '/opt/npm-tools/node_modules/esbuild/bin/esbuild'
 if not pathlib.Path(esb).exists():
     esb = None
-r = subprocess.run(([esb] if esb else ['npx', '--yes', 'esbuild@0.24.0']) + [ str(src / 'main.jsx'), '--bundle', '--define:process.env.NODE_ENV="production"', '--loader:.jsx=jsx', '--jsx=transform',
+r = subprocess.run(([esb] if esb else ['npx', '--yes', 'esbuild@0.24.0']) + [ str(src / 'main.jsx'), '--bundle', '--loader:.jsx=jsx', '--jsx=transform',
                     '--jsx-factory=React.createElement', '--jsx-fragment=React.Fragment',
                     '--format=iife', '--target=es2018', '--charset=utf8', '--minify'],
                    capture_output=True, text=True, encoding='utf-8', shell=(sys.platform == 'win32'))
