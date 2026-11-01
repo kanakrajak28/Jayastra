@@ -5,7 +5,7 @@ site/index.html      -> single-page preview (hash routes, images as files next t
                         (titles, descriptions, Open Graph, JSON-LD), shared /app.js,
                         /img, sitemap.xml, robots.txt, 404.html, favicon, share image.
 """
-import subprocess, sys, pathlib, base64, json, re, shutil, html as H
+import subprocess, sys, pathlib, base64, json, re, shutil, hashlib, html as H
 from datetime import date
 
 root = pathlib.Path(__file__).parent
@@ -79,7 +79,9 @@ head_src = re.sub(r'<meta charset="utf-8">\n', '', head_src, count=1)
 head_src = re.sub(r'<title>.*?</title>\n', '', head_src, count=1)
 head_src = re.sub(r'<meta name="description"[^>]*>\n', '', head_src, count=1)
 body_prod = body_src.replace('<script>/*__LOGOS__*/</script>', '<script>window.__ROUTING="path";window.__ASSET_BASE="/";window.__LOGO_LIGHT="/logo.png";window.__LOGO_DARK="/logo-dark.png";</script>')
-body_prod = re.sub(r'<script>\s*/\*__APP__\*/\s*</script>', '<script src="/app.js"></script>', body_prod)
+# versioned URL so browsers fetch the new app.js right after each deploy instead of a cached copy
+APP_URL = '/app.js?v=' + hashlib.sha1(js.encode('utf-8')).hexdigest()[:10]
+body_prod = re.sub(r'<script>\s*/\*__APP__\*/\s*</script>', '<script src="%s"></script>' % APP_URL, body_prod)
 assert '/*__APP__*/' not in body_prod and '/*__LOGOS__*/' not in body_prod
 
 def page(path, title, desc, image, ld=False, robots='index, follow'):
@@ -107,7 +109,7 @@ def page(path, title, desc, image, ld=False, robots='index, follow'):
         '<meta name="twitter:title" content="%s">' % e(title),
         '<meta name="twitter:description" content="%s">' % e(desc),
         '<meta name="twitter:image" content="%s">' % e(image),
-        '<link rel="preload" href="/app.js" as="script">',
+        '<link rel="preload" href="%s" as="script">' % APP_URL,
     ]
     if ld: meta.append('<script type="application/ld+json">%s</script>' % json.dumps(LD, ensure_ascii=False))
     return '<!doctype html>\n<html lang="en-IN">\n<head>\n' + '\n'.join(meta) + '\n' + head_src + '\n</head>\n<body>\n' + body_prod + '\n</body>\n</html>\n'
