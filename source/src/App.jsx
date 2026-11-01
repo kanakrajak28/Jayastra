@@ -60,7 +60,10 @@ export function App() {
   const hash = loc.anchor;
   const [loading, setLoading] = useState(() => {
     if (reduce || route.page !== 'home') return false;
-    try { if (sessionStorage.getItem('jy-seen')) return false; } catch (e) { /* ignore */ }
+    // a refresh plays it again; coming back to home from another page of the site skips it
+    let reload = false;
+    try { const nav = performance.getEntriesByType('navigation')[0]; reload = !!nav && nav.type === 'reload'; } catch (e) { /* ignore */ }
+    try { if (!reload && sessionStorage.getItem('jy-seen')) return false; } catch (e) { /* ignore */ }
     return true;
   });
   // no preloader means nothing will call done(), so the hero must be shown straight away
