@@ -53,11 +53,35 @@ const routeMeta = (r) => {
   return ['Jayastra | Brand, digital & 3D design studio in Jabalpur, India', SITE_DESC];
 };
 
+/* Home sections below the hero mount one per idle moment, so phones paint the first
+   screen sooner and the work is split into short tasks. A section link in the URL, or
+   any click, key, scroll or touch, mounts the rest at once. */
+const HOME_SECTIONS = [Statement, Work, Services, Industries, CaseStudies, Process, Mark3D, Stats, Advantage, Testimonials, Pricing, FAQ, Contact];
+function useStaged(count, all) {
+  const [n, setN] = useState(all ? count : 0);
+  useEffect(() => {
+    if (n >= count) return undefined;
+    const ric = window.requestIdleCallback || ((f) => setTimeout(f, 30));
+    const cic = window.cancelIdleCallback || clearTimeout;
+    const id = ric(() => setN((v) => Math.min(count, v + 1)), { timeout: 300 });
+    return () => cic(id);
+  }, [n, count]);
+  useEffect(() => {
+    if (n >= count) return undefined;
+    const evs = ['pointerdown', 'keydown', 'wheel', 'touchstart', 'scroll'];
+    const rest = () => setN(count);
+    evs.forEach((e) => window.addEventListener(e, rest, { passive: true, once: true }));
+    return () => evs.forEach((e) => window.removeEventListener(e, rest));
+  }, [n >= count]);
+  return n;
+}
+
 export function App() {
   const reduce = reducedNow();
   const [loc, setLoc] = useState(routeOf);
   const route = parseRoute(loc);
   const hash = loc.anchor;
+  const staged = useStaged(HOME_SECTIONS.length, !!route.anchor);
   const [loading, setLoading] = useState(() => {
     if (reduce || route.page !== 'home') return false;
     // a refresh plays it again; coming back to home from another page of the site skips it
@@ -178,21 +202,9 @@ export function App() {
       {route.page === '404' ? <NotFound /> : null}
       {route.page === 'home' ? <main id="main">
         <Hero ready={ready} />
-        <Statement />
-        <Work />
-        <Services />
-        <Industries />
-        <CaseStudies />
-        <Process />
-        <Mark3D />
-        <Stats />
-        <Advantage />
-        <Testimonials />
-        <Pricing />
-        <FAQ />
-        <Contact />
+        {HOME_SECTIONS.slice(0, staged).map((S, k) => <S key={k} />)}
       </main> : (route.page === 'privacy' || route.page === 'terms' || route.page === '404' ? null : <Contact />)}
-      <Footer />
+      {route.page !== 'home' || staged >= HOME_SECTIONS.length ? <Footer /> : null}
     </>
   );
 }

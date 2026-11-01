@@ -15,6 +15,7 @@ Live at https://www.jayastra.com, deployed by Vercel from this repo.
 | --- | --- |
 | `main.jsx` | Entry point: mounts `<App />` |
 | `App.jsx` | Routing (home, sector, case, work, legal, 404), page titles, smooth scroll, page layout order |
+| `lib/vendor.js` | Loads React, ReactDOM, Framer Motion and Lenis from npm and exposes them as globals |
 | `lib/react.js` | React hooks (`useState`, `useEffect`, ...) taken from the React global |
 | `lib/utils.js` | Image helpers (`img`, `imgHi`, Unsplash IDs), routing link helper `to()`, easing, media queries |
 | `lib/motion.js` | Framer Motion, with a static fallback if it fails to load |
@@ -44,7 +45,7 @@ Live at https://www.jayastra.com, deployed by Vercel from this repo.
 
 ## Make a change
 1. Edit the file for that section in `source/src/`, or `source/src/shell.html` for CSS.
-2. Build: `cd source && python build.py` (needs Python 3 and Node.js; esbuild is fetched automatically with npx).
+2. Build: `cd source && python build.py` (needs Python 3 and Node.js). React, Framer Motion and Lenis are bundled into `app.js` from npm; the versions are pinned in `source/package.json` and the first build runs `npm install` for you.
 3. Commit and push: `git add -A && git commit -m "Describe the change" && git push`.
 Vercel redeploys jayastra.com within a minute or two.
 
