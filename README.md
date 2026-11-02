@@ -44,8 +44,9 @@ Live at https://www.jayastra.com, deployed by Vercel from this repo.
 
 ## Make a change
 1. Edit the file for that section in `source/src/`, or `source/src/shell.html` for CSS.
-2. Build: `cd source && python build.py` (needs Python 3 and Node.js; esbuild is fetched automatically with npx).
-3. Commit and push: `git add -A && git commit -m "Describe the change" && git push`.
+2. Format (optional): `cd source && npx prettier --write src` keeps the code style consistent (settings in `source/.prettierrc`; for `shell.html` only the CSS is formatted).
+3. Build: `cd source && python build.py` (needs Python 3 and Node.js; esbuild is fetched automatically with npx).
+4. Commit and push: `git add -A && git commit -m "Describe the change" && git push`.
 Vercel redeploys jayastra.com within a minute or two.
 
 `source/site/index.html` is a single-file preview you can open locally after building.

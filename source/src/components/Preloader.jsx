@@ -5,8 +5,17 @@ import { AnimatePresence, motion } from '../lib/motion';
    Preloader — "hello" in eleven languages, about three seconds.
    ====================================================================== */
 const HELLOS = [
-  ['Hello', 'en'], ['नमस्ते', 'hi'], ['ਸਤ ਸ੍ਰੀ ਅਕਾਲ', 'pa'], ['Bonjour', 'fr'], ['Hola', 'es'], ['Ciao', 'it'],
-  ['こんにちは', 'ja'], ['Olá', 'pt'], ['Hallo', 'de'], ['مرحبا', 'ar'], ['안녕하세요', 'ko'],
+  ['Hello', 'en'],
+  ['नमस्ते', 'hi'],
+  ['ਸਤ ਸ੍ਰੀ ਅਕਾਲ', 'pa'],
+  ['Bonjour', 'fr'],
+  ['Hola', 'es'],
+  ['Ciao', 'it'],
+  ['こんにちは', 'ja'],
+  ['Olá', 'pt'],
+  ['Hallo', 'de'],
+  ['مرحبا', 'ar'],
+  ['안녕하세요', 'ko'],
 ];
 export function Preloader({ onReveal, onDone }) {
   const [i, setI] = useState(0);
@@ -23,7 +32,7 @@ export function Preloader({ onReveal, onDone }) {
   // each word is timed from when the previous one rendered, so on a busy phone a word stays a little longer instead of the rest being skipped
   useEffect(() => {
     const last = i === HELLOS.length - 1;
-    const id = setTimeout(() => (last ? leave() : setI(i + 1)), i === 0 ? 280 : (last ? 145 : 125));
+    const id = setTimeout(() => (last ? leave() : setI(i + 1)), i === 0 ? 280 : last ? 145 : 125);
     return () => clearTimeout(id);
   }, [i, leave]);
   useEffect(() => {
@@ -32,29 +41,80 @@ export function Preloader({ onReveal, onDone }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [leave]);
   const curve = Math.min(240, vp.h * 0.28);
-  const from = 'M0 0 L' + vp.w + ' 0 L' + vp.w + ' ' + vp.h + ' Q' + vp.w / 2 + ' ' + (vp.h + curve) + ' 0 ' + vp.h + ' L0 0Z';
-  const to = 'M0 0 L' + vp.w + ' 0 L' + vp.w + ' ' + vp.h + ' Q' + vp.w / 2 + ' ' + vp.h + ' 0 ' + vp.h + ' L0 0Z';
+  const from =
+    'M0 0 L' +
+    vp.w +
+    ' 0 L' +
+    vp.w +
+    ' ' +
+    vp.h +
+    ' Q' +
+    vp.w / 2 +
+    ' ' +
+    (vp.h + curve) +
+    ' 0 ' +
+    vp.h +
+    ' L0 0Z';
+  const to =
+    'M0 0 L' +
+    vp.w +
+    ' 0 L' +
+    vp.w +
+    ' ' +
+    vp.h +
+    ' Q' +
+    vp.w / 2 +
+    ' ' +
+    vp.h +
+    ' 0 ' +
+    vp.h +
+    ' L0 0Z';
   const ease = [0.76, 0, 0.24, 1];
   const [word, lang] = HELLOS[i];
   return (
-    <motion.div className="loader" onClick={leave} role="status" aria-label="Loading Jayastra"
-      initial={{ y: 0 }} animate={leaving ? { y: -(vp.h + curve) } : { y: 0 }} transition={{ duration: 0.82, ease }}
-      onAnimationComplete={() => { if (left.current) onDone(); }}>
+    <motion.div
+      className="loader"
+      onClick={leave}
+      role="status"
+      aria-label="Loading Jayastra"
+      initial={{ y: 0 }}
+      animate={leaving ? { y: -(vp.h + curve) } : { y: 0 }}
+      transition={{ duration: 0.82, ease }}
+      onAnimationComplete={() => {
+        if (left.current) onDone();
+      }}
+    >
       <svg width={vp.w} height={vp.h + curve} aria-hidden="true">
-        <motion.path fill="#09090B" d={leaving ? to : from} initial={{ d: from }} animate={{ d: leaving ? to : from }} transition={{ duration: 0.82, ease }} />
+        <motion.path
+          fill="#09090B"
+          d={leaving ? to : from}
+          initial={{ d: from }}
+          animate={{ d: leaving ? to : from }}
+          transition={{ duration: 0.82, ease }}
+        />
       </svg>
       <div className="loader-words" aria-hidden="true">
         <div className="hello-mask">
           <AnimatePresence initial={false}>
-            <motion.span key={i} className="hello" lang={lang} dir={lang === 'ar' ? 'rtl' : 'ltr'}
-              initial={{ y: '75%', opacity: 0 }} animate={{ y: '0%', opacity: 1 }} exit={{ y: '-75%', opacity: 0 }}
-              transition={{ duration: 0.2, ease: [0.3, 0, 0.2, 1] }}>
-              <i className="hello-dot" />{word}
+            <motion.span
+              key={i}
+              className="hello"
+              lang={lang}
+              dir={lang === 'ar' ? 'rtl' : 'ltr'}
+              initial={{ y: '75%', opacity: 0 }}
+              animate={{ y: '0%', opacity: 1 }}
+              exit={{ y: '-75%', opacity: 0 }}
+              transition={{ duration: 0.2, ease: [0.3, 0, 0.2, 1] }}
+            >
+              <i className="hello-dot" />
+              {word}
             </motion.span>
           </AnimatePresence>
         </div>
       </div>
-      <motion.span className="loader-skip" animate={{ opacity: leaving ? 0 : 1 }}>Click to skip</motion.span>
+      <motion.span className="loader-skip" animate={{ opacity: leaving ? 0 : 1 }}>
+        Click to skip
+      </motion.span>
     </motion.div>
   );
 }

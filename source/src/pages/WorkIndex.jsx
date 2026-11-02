@@ -12,13 +12,24 @@ export function WorkIndex() {
         <div className="wrap">
           <p className="eyebrow">Case studies</p>
           <h1 className="wi-h">All case studies</h1>
-          <p className="wi-sub">Concept projects across {SECTOR_SLUGS.length} sectors. Filter by the one closest to yours.</p>
+          <p className="wi-sub">
+            Concept projects across {SECTOR_SLUGS.length} sectors. Filter by the one closest to
+            yours.
+          </p>
           <div className="wi-filters" role="group" aria-label="Filter by sector">
-            <button type="button" className={f === 'all' ? 'on' : ''} onClick={() => setF('all')}>All <small>{CASES.length}</small></button>
-            {SECTOR_SLUGS.map((s, k) => <button type="button" key={s} className={f === s ? 'on' : ''} onClick={() => setF(s)}>{INDUSTRIES[k].name}</button>)}
+            <button type="button" className={f === 'all' ? 'on' : ''} onClick={() => setF('all')}>
+              All <small>{CASES.length}</small>
+            </button>
+            {SECTOR_SLUGS.map((s, k) => (
+              <button type="button" key={s} className={f === s ? 'on' : ''} onClick={() => setF(s)}>
+                {INDUSTRIES[k].name}
+              </button>
+            ))}
           </div>
           <div className="cs-grid two">
-            {list.map((c) => <CaseCard key={c.slug} c={c} />)}
+            {list.map((c) => (
+              <CaseCard key={c.slug} c={c} />
+            ))}
           </div>
         </div>
       </section>

@@ -23,6 +23,13 @@ if r.returncode != 0:
 js = r.stdout.replace('</script', '<\\/script')
 shell = (src / 'shell.html').read_text(encoding='utf-8')
 assert '/*__APP__*/' in shell and '/*__LOGOS__*/' in shell
+# shell.html keeps its CSS readable; the built pages get it minified
+a, b = shell.index('<style>') + len('<style>'), shell.index('</style>')
+r = subprocess.run(([esb] if esb else ['npx', '--yes', 'esbuild@0.24.0']) + ['--loader=css', '--minify'],
+                   input=shell[a:b], capture_output=True, text=True, encoding='utf-8', shell=(sys.platform == 'win32'))
+if r.returncode != 0:
+    print(r.stderr); sys.exit(1)
+shell = shell[:a] + '\n' + r.stdout.strip() + '\n' + shell[b:]
 enc = lambda f: 'data:image/png;base64,' + base64.b64encode((out / f).read_bytes()).decode()
 
 # ---------- 1. preview (hash routing, inline logos, images as files) ----------
@@ -32,12 +39,17 @@ preview = shell.replace('/*__APP__*/', js).replace('/*__LOGOS__*/', 'window.__LO
 
 # ---------- 2. route data parsed from the app source (all modules under src/) ----------
 app = '\n'.join(p.read_text(encoding='utf-8') for p in sorted(src.rglob('*.js*')) if p.name != 'app.compiled.js')
+# the patterns allow any line breaks and either quote style, so the sources can be run through Prettier
+STR = r"""('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")"""  # a JS string literal, quotes included
+SKIP = r"""(?:'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")"""  # the same, not captured
+lit = lambda s: re.sub(r'\\(.)', r'\1', s[1:-1])
 slugs = re.search(r"const SECTOR_SLUGS = \[([^\]]*)\]", app).group(1)
 slugs = re.findall(r"'([\w-]+)'", slugs)
-inds = re.findall(r"\{ name: '((?:[^'\\]|\\.)*)', photo: '([\w-]+)', text: '((?:[^'\\]|\\.)*)'", app)
+inds = [(lit(n), p, lit(t)) for n, p, t in re.findall(r"\{\s*name:\s*" + STR + r",\s*photo:\s*'([\w-]+)',\s*text:\s*" + STR, app)]
 assert len(inds) == len(slugs) == 14, (len(inds), len(slugs))
 sectors = {s: {'name': n, 'photo': p, 'text': t} for s, (n, p, t) in zip(slugs, inds)}
-cases = re.findall(r"\['([\w-]+)', '((?:[^'\\]|\\.)*)', '([\w-]+)', '((?:[^'\\]|\\.)*)', '(\d{4})', '((?:[^'\\]|\\.)*)', '(?:[^'\\]|\\.)*', '(?:[^'\\]|\\.)*', '(?:[^'\\]|\\.)*', \['([\w-]+)'", app)
+cases = re.findall(r"\[\s*'([\w-]+)',\s*" + STR + r",\s*'([\w-]+)',\s*" + STR + r",\s*'(\d{4})',\s*" + STR + r",\s*" + SKIP + r",\s*" + SKIP + r",\s*" + SKIP + r",\s*\[\s*'([\w-]+)'", app)
+cases = [(slug, lit(name), sec, lit(services), year, lit(summary), im0) for slug, name, sec, services, year, summary, im0 in cases]
 assert len(cases) == 28, len(cases)
 remote = dict(re.findall(r"(\w+): '(\d{10,13}-[0-9a-f]{12})'", app[app.index('const REMOTE = {'):app.index('const REMOTE_FB')]))
 hi = dict(re.findall(r"(\w+): '(\d{10,13}-[0-9a-f]{12})'", app[app.index('const HI = {'):app.index('const FB_BY_ID')]))
@@ -47,7 +59,7 @@ def share_img(k):
     if k in hi: return 'https://images.unsplash.com/photo-%s?auto=format&fit=crop&w=1200&h=630&q=70' % hi[k]
     return DOMAIN + '/og.png'
 
-SITE_DESC = re.search(r"const SITE_DESC = '([^']*)'", app).group(1)
+SITE_DESC = lit(re.search(r"const SITE_DESC =\s*" + STR, app).group(1))
 routes = [('/', 'Jayastra | Brand, digital & 3D design studio in Jabalpur, India', SITE_DESC, DOMAIN + '/og.png', '1.0')]
 routes.append(('/work', 'Case studies | Jayastra', 'Concept projects across 14 sectors, from brand identity and packaging to product UI and 3D renders.', DOMAIN + '/og.png', '0.8'))
 for s, d in sectors.items():
