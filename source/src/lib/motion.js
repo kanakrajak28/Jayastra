@@ -290,6 +290,3 @@ export const useInView = M.useInView;
 export const animate = M.animate;
 export const useAnimationFrame = M.useAnimationFrame;
 export const useReducedMotion = M.useReducedMotion;
-// runs a callback once per frame, after Framer Motion has applied that frame's animated values
-export const afterRender =
-  FM && FM.frame ? (cb) => FM.frame.postRender(cb) : (cb) => requestAnimationFrame(cb);

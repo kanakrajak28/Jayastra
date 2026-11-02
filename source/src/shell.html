@@ -1208,26 +1208,30 @@ footer[id] {
   max-width: 60ch;
 }
 
-/* ---------- services (hover list with photo panel) ---------- */
+/* ---------- services (every discipline open, with a photo panel that follows the scroll) ---------- */
 .svc {
+  --svc-in: 36px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
-  gap: clamp(28px, 5vw, 80px);
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: clamp(32px, 5vw, 90px);
   align-items: start;
 }
-.svc-media {
+.svc-aside {
   position: sticky;
-  top: 96px;
+  top: 110px;
+}
+.svc-media {
+  position: relative;
+  width: 100%;
   aspect-ratio: 4/5;
-  border-radius: 26px;
+  max-height: calc(100vh - 180px);
+  border-radius: 22px;
   overflow: hidden;
   background: var(--ink);
 }
 .svc-layer {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
 }
 .svc-layer img {
   position: absolute;
@@ -1236,27 +1240,18 @@ footer[id] {
   height: 100%;
   object-fit: cover;
 }
-.svc-ghost {
-  font-size: clamp(44px, 6vw, 92px);
-  font-weight: 700;
-  letter-spacing: -0.05em;
-  color: rgba(255, 255, 255, 0.14);
-  text-align: center;
-  padding: 0 24px;
-  line-height: 0.95;
-}
 .svc-media::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(9, 9, 11, 0) 55%, rgba(9, 9, 11, 0.62));
+  background: linear-gradient(180deg, rgba(9, 9, 11, 0) 60%, rgba(9, 9, 11, 0.6));
   pointer-events: none;
 }
 .svc-cap {
   position: absolute;
-  left: clamp(20px, 2.4vw, 32px);
-  right: clamp(20px, 2.4vw, 32px);
-  bottom: clamp(20px, 2.4vw, 30px);
+  left: clamp(20px, 2.4vw, 30px);
+  right: clamp(20px, 2.4vw, 30px);
+  bottom: clamp(18px, 2.2vw, 28px);
   z-index: 1;
   display: flex;
   align-items: flex-end;
@@ -1271,45 +1266,67 @@ footer[id] {
   color: rgba(255, 255, 255, 0.75);
 }
 .svc-cap b {
-  font-size: clamp(24px, 2.4vw, 34px);
+  font-size: clamp(22px, 2.2vw, 32px);
   font-weight: 500;
   letter-spacing: -0.04em;
 }
-.svc-list {
-  border-bottom: 1px solid var(--line);
+.svc-progress {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin-top: 16px;
 }
-.svc-row {
+.svc-progress span {
+  height: 2px;
+  border-radius: 2px;
+  background: var(--line-2);
+  transition: background 0.5s var(--ease);
+}
+.svc-progress span.on {
+  background: var(--brand-btn);
+}
+.svc-block {
+  padding-block: clamp(40px, 4.4vw, 64px);
   border-top: 1px solid var(--line);
 }
-.svc-head {
-  display: grid;
-  grid-template-columns: 44px 1fr auto;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding-block: clamp(22px, 2.4vw, 32px);
-  background: none;
-  border: 0;
-  text-align: left;
-  color: var(--ink);
+.svc-block:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+.svc-block:last-child {
+  padding-bottom: 0;
+}
+.svc-block-media {
+  display: none;
+}
+.svc-title {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
 }
 .svc-n {
+  flex: none;
+  width: 20px;
   font-family: var(--mono);
   font-size: 12.5px;
-  color: var(--brand-ink);
   letter-spacing: -0.005em;
+  color: var(--brand-ink);
 }
 .svc-name {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
-  font-size: clamp(28px, 3.4vw, 48px);
+  margin: 0;
+  font-size: clamp(32px, 3.6vw, 52px);
   font-weight: 600;
   letter-spacing: -0.045em;
   line-height: 1;
-  color: #a6a39c;
-  transition: color 0.35s var(--ease);
+  color: #b3b0a9;
+  transition: color 0.6s var(--ease);
+}
+.svc-block.on .svc-name {
+  color: var(--ink);
 }
 .svc-name em {
   font-style: normal;
@@ -1321,66 +1338,50 @@ footer[id] {
   background: var(--brand-btn);
   color: #fff;
 }
-.svc-row.on .svc-name,
-.svc-head:hover .svc-name {
-  color: var(--ink);
+.svc-note {
+  margin: 18px 0 0 var(--svc-in);
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: -0.005em;
+  color: var(--brand-ink);
 }
-.svc-arrow {
+.svc-text {
+  max-width: 52ch;
+  margin: 10px 0 0 var(--svc-in);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.svc-items {
   display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1px solid var(--line-2);
-  color: var(--muted);
-  transition:
-    background 0.35s,
-    color 0.35s,
-    border-color 0.35s,
-    transform 0.45s var(--ease);
+  grid-template-columns: 1fr 1fr;
+  gap: 0 28px;
+  margin: 28px 0 0 var(--svc-in);
+  padding: 0;
+  list-style: none;
 }
-.svc-row.on .svc-arrow {
-  background: var(--brand-btn);
-  border-color: var(--brand-btn);
-  color: #fff;
-  transform: rotate(45deg);
-}
-.svc-body {
-  overflow: hidden;
-}
-.svc-body > p {
-  max-width: 56ch;
-  padding-left: 56px;
-  color: var(--muted);
-  font-size: 16px;
-  line-height: 1.65;
-}
-.svc-body ul {
+.svc-items li {
   display: flex;
   flex-direction: column;
-  margin: 20px 0 0 56px;
-  border-top: 1px dashed var(--line-2);
-}
-.svc-body li {
-  display: grid;
-  grid-template-columns: minmax(150px, 0.7fr) 1.3fr;
-  gap: 6px 24px;
+  gap: 4px;
   padding-block: 14px;
-  border-bottom: 1px dashed var(--line-2);
-  font-size: 14.5px;
+  border-top: 1px solid var(--line);
 }
-.svc-body li b {
+.svc-items li b {
+  font-size: 15px;
   font-weight: 600;
+  color: var(--ink);
 }
-.svc-body li span {
+.svc-items li span {
+  font-size: 14px;
+  line-height: 1.5;
   color: var(--muted);
-  line-height: 1.55;
 }
 .svc-link {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin: 20px 0 30px 56px;
+  margin: 22px 0 0 var(--svc-in);
   font-weight: 600;
   font-size: 15px;
   color: var(--brand-ink);
@@ -1393,24 +1394,36 @@ footer[id] {
   .svc {
     grid-template-columns: 1fr;
   }
-  .svc-media {
-    position: relative;
-    top: auto;
-    aspect-ratio: 4/3;
+  .svc-aside {
+    display: none;
+  }
+  .svc-block-media {
+    display: block;
+    aspect-ratio: 16/10;
+    margin-bottom: 24px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--ink);
+  }
+  .svc-block-media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .svc-name {
+    color: var(--ink);
   }
 }
 @media (max-width: 560px) {
-  .svc-head {
-    grid-template-columns: 32px 1fr auto;
+  .svc {
+    --svc-in: 0px;
   }
-  .svc-body > p,
-  .svc-body ul,
-  .svc-link {
-    padding-left: 0;
-    margin-left: 0;
+  .svc-items {
+    gap: 0 16px;
   }
-  .svc-body li {
-    grid-template-columns: 1fr;
+  .svc-items li span {
+    display: none;
   }
 }
 
@@ -4522,7 +4535,6 @@ h4,
   canvas,
   .chip,
   .idk-name,
-  .svc-head,
   .book,
   .book * {
     cursor:

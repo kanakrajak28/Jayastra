@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from '../lib/react';
-import { EASE, img, isFine } from '../lib/utils';
-import { AnimatePresence, afterRender, motion } from '../lib/motion';
+import { EASE, img } from '../lib/utils';
+import { AnimatePresence, motion } from '../lib/motion';
 import { Arrow, Reveal, SectionHead } from './shared';
 
 /* ======================================================================
-   Services — interactive box grid with a cursor-lit hairline
+   Services: every discipline open in a column, with a photo panel that
+   stays in view and follows the discipline being read
    ====================================================================== */
 const DISCIPLINES = [
   {
@@ -241,62 +242,35 @@ const DISC_INFO = [
     text: 'Social, ads and an ongoing retainer, built to a system so the work stays on-brand week after week.',
   },
 ];
-// opening and closing a row: a gentle ease-in-out, with the content fading in once the row has started to open
-const OPEN = {
-  height: { duration: 0.6, ease: [0.45, 0, 0.2, 1] },
-  opacity: { duration: 0.4, delay: 0.12, ease: 'easeOut' },
-};
-const CLOSE = {
-  height: { duration: 0.55, ease: [0.45, 0, 0.2, 1] },
-  opacity: { duration: 0.2, ease: 'easeOut' },
-};
-
-// While a row above collapses, everything below it moves up. Scroll by the same amount for the length of
-// the animation, so the row that was hovered or tapped stays where it is and opens downward.
-function keepInPlace(el) {
-  const top = el.getBoundingClientRect().top;
-  const start = performance.now();
-  const root = document.documentElement;
-  // the page has scroll-behavior: smooth, which would turn each correction into a slow scroll that lags behind
-  root.style.scrollBehavior = 'auto';
-  let stopped = false;
-  const stop = () => {
-    stopped = true;
-  };
-  window.addEventListener('wheel', stop, { passive: true });
-  window.addEventListener('touchmove', stop, { passive: true });
-  const step = () => {
-    const shift = el.getBoundingClientRect().top - top;
-    if (!stopped && Math.abs(shift) > 0.5) {
-      const y = window.scrollY + shift;
-      if (window.__lenis) window.__lenis.scrollTo(y, { immediate: true, force: true });
-      window.scrollTo(0, y);
-    }
-    if (!stopped && performance.now() - start < 700) afterRender(step);
-    else {
-      root.style.scrollBehavior = '';
-      window.removeEventListener('wheel', stop);
-      window.removeEventListener('touchmove', stop);
-    }
-  };
-  afterRender(step);
-}
-
 export function Services() {
   const [active, setActive] = useState(0);
   const [failed, setFailed] = useState({});
-  const hoverTimer = useRef(0);
-  useEffect(() => () => clearTimeout(hoverTimer.current), []);
-  const open = (k, head) => {
-    if (k === active) return;
-    if (head) keepInPlace(head);
-    setActive(k);
-  };
-  // a row opens only once the cursor rests on it, so moving across the list doesn't flip rows open
-  const hoverOpen = (k, head) => {
-    clearTimeout(hoverTimer.current);
-    hoverTimer.current = setTimeout(() => open(k, head), 150);
-  };
+  const blocks = useRef([]);
+  // the discipline crossing a line just above the middle of the screen is the one being read
+  useEffect(() => {
+    if (!('IntersectionObserver' in window)) return undefined;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) setActive(blocks.current.indexOf(e.target));
+        });
+      },
+      { rootMargin: '-45% 0px -54% 0px' },
+    );
+    blocks.current.forEach((el) => el && io.observe(el));
+    return () => io.disconnect();
+  }, []);
+  const photo = (k, className) =>
+    !failed[k] ? (
+      <img
+        className={className}
+        src={img(DISC_INFO[k].photo)}
+        alt={DISC_INFO[k].alt}
+        loading="lazy"
+        decoding="async"
+        onError={() => setFailed((f) => Object.assign({}, f, { [k]: true }))}
+      />
+    ) : null;
   return (
     <section id="services" className="band line-top">
       <div className="wrap">
@@ -305,106 +279,88 @@ export function Services() {
           title="Forty-one services. Six disciplines. One studio."
           aside="Take one line item or hand us the whole thing, from strategy to the final render."
         />
-        <Reveal amount={0.08} className="svc">
-          <div className="svc-media">
-            {DISCIPLINES.map((d, k) => (
-              <motion.div
-                key={d.name}
-                className="svc-layer"
-                style={{ background: DISC_INFO[k].bg }}
-                initial={false}
-                animate={{ opacity: k === active ? 1 : 0, scale: k === active ? 1 : 1.06 }}
-                transition={{ duration: 0.7, ease: EASE }}
-                aria-hidden={k !== active}
-              >
-                <span className="svc-ghost">{d.name}</span>
-                {!failed[k] ? (
-                  <img
-                    src={img(DISC_INFO[k].photo)}
-                    alt={DISC_INFO[k].alt}
-                    loading="lazy"
-                    decoding="async"
-                    onError={() => setFailed((f) => Object.assign({}, f, { [k]: true }))}
-                  />
-                ) : null}
-              </motion.div>
-            ))}
-            <div className="svc-cap">
-              <span>
-                {String(active + 1).padStart(2, '0')} /{' '}
-                {String(DISCIPLINES.length).padStart(2, '0')}
-              </span>
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.b
-                  key={active}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.35, ease: EASE }}
+        <div className="svc">
+          <div className="svc-aside" aria-hidden="true">
+            <div className="svc-media">
+              {DISCIPLINES.map((d, k) => (
+                <motion.div
+                  key={d.name}
+                  className="svc-layer"
+                  style={{ background: DISC_INFO[k].bg }}
+                  initial={false}
+                  animate={{ opacity: k === active ? 1 : 0, scale: k === active ? 1 : 1.06 }}
+                  transition={{ duration: 0.8, ease: EASE }}
                 >
-                  {DISCIPLINES[active].name}
-                </motion.b>
-              </AnimatePresence>
+                  {photo(k)}
+                </motion.div>
+              ))}
+              <div className="svc-cap">
+                <span>
+                  {String(active + 1).padStart(2, '0')} /{' '}
+                  {String(DISCIPLINES.length).padStart(2, '0')}
+                </span>
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.b
+                    key={active}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.35, ease: EASE }}
+                  >
+                    {DISCIPLINES[active].name}
+                  </motion.b>
+                </AnimatePresence>
+              </div>
+            </div>
+            <div className="svc-progress">
+              {DISCIPLINES.map((d, k) => (
+                <span key={d.name} className={k <= active ? 'on' : ''} />
+              ))}
             </div>
           </div>
-          <ol className="svc-list">
-            {DISCIPLINES.map((d, k) => {
-              const on = k === active;
-              return (
-                <li
-                  key={d.name}
-                  className={'svc-row' + (on ? ' on' : '')}
-                  onMouseEnter={(e) => {
-                    if (isFine()) hoverOpen(k, e.currentTarget.querySelector('.svc-head'));
-                  }}
-                  onMouseLeave={() => clearTimeout(hoverTimer.current)}
-                >
-                  <button
-                    className="svc-head"
-                    aria-expanded={on}
-                    aria-controls={'svc-' + k}
-                    onClick={(e) => open(k, e.currentTarget)}
-                    onFocus={(e) => open(k, e.currentTarget)}
-                  >
-                    <span className="svc-n">{String(k + 1).padStart(2, '0')}</span>
-                    <span className="svc-name">
-                      {d.name}
-                      {d.edge ? <em>Our edge</em> : null}
-                    </span>
-                    <span className="svc-arrow" aria-hidden="true">
-                      <Arrow />
-                    </span>
-                  </button>
-                  <AnimatePresence initial={false}>
-                    {on ? (
-                      <motion.div
-                        id={'svc-' + k}
-                        className="svc-body"
-                        key="b"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1, transition: OPEN }}
-                        exit={{ height: 0, opacity: 0, transition: CLOSE }}
-                      >
-                        <p>{DISC_INFO[k].text}</p>
-                        <ul>
-                          {d.items.map(([t, desc]) => (
-                            <li key={t}>
-                              <b>{t}</b>
-                              <span>{desc}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        <a className="svc-link" href="#contact">
-                          Enquire about {d.name.toLowerCase()} <Arrow />
-                        </a>
-                      </motion.div>
-                    ) : null}
-                  </AnimatePresence>
-                </li>
-              );
-            })}
-          </ol>
-        </Reveal>
+          <div className="svc-list">
+            {DISCIPLINES.map((d, k) => (
+              <article
+                key={d.name}
+                ref={(el) => {
+                  blocks.current[k] = el;
+                }}
+                className={'svc-block' + (k === active ? ' on' : '')}
+                aria-labelledby={'svc-' + k}
+              >
+                <div className="svc-block-media">{photo(k)}</div>
+                <Reveal className="svc-title" amount={0.4}>
+                  <span className="svc-n">{String(k + 1).padStart(2, '0')}</span>
+                  <h3 id={'svc-' + k} className="svc-name">
+                    {d.name}
+                    {d.edge ? <em>Our edge</em> : null}
+                  </h3>
+                </Reveal>
+                <Reveal delay={0.06} amount={0.3}>
+                  <p className="svc-note">{d.note}</p>
+                  <p className="svc-text">{DISC_INFO[k].text}</p>
+                </Reveal>
+                <ul className="svc-items">
+                  {d.items.map(([t, desc], i) => (
+                    <Reveal
+                      as="li"
+                      key={t}
+                      delay={0.04 * (i % 2) + 0.03 * Math.floor(i / 2)}
+                      y={18}
+                      amount={0.5}
+                    >
+                      <b>{t}</b>
+                      <span>{desc}</span>
+                    </Reveal>
+                  ))}
+                </ul>
+                <a className="svc-link" href="#contact">
+                  Enquire about {d.name.toLowerCase()} <Arrow />
+                </a>
+              </article>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );

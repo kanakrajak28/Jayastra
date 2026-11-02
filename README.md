@@ -24,7 +24,7 @@ Live at https://www.jayastra.com, deployed by Vercel from this repo.
 | `components/Hero.jsx` | Hero headline |
 | `components/Statement.jsx` | Marquee and the studio statement |
 | `components/Work.jsx` | Work section: the page-turning photo album |
-| `components/Services.jsx` | Services grid (`DISCIPLINES`) |
+| `components/Services.jsx` | Services: all six disciplines open, with a photo panel that follows the scroll (`DISCIPLINES`, `DISC_INFO`) |
 | `components/Industries.jsx` | Industries list (`INDUSTRIES`, `SECTOR_SLUGS`) |
 | `components/CaseStudies.jsx` | Case study data (`CASES`, `FEATURED`) and the home-page case studies section |
 | `components/Process.jsx` | Process timeline (`STEPS`) |
