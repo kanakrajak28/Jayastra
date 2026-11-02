@@ -44,7 +44,7 @@ Live at https://www.jayastra.com, deployed by Vercel from this repo.
 
 ## Make a change
 1. Edit the file for that section in `source/src/`, or `source/src/shell.html` for CSS.
-2. Build: `cd source && python build.py` (needs Python 3 with Pillow, `pip install pillow`, and Node.js; esbuild is fetched automatically with npx).
+2. Build: `cd source && python build.py` (needs Python 3 and Node.js; esbuild is fetched automatically with npx).
 3. Commit and push: `git add -A && git commit -m "Describe the change" && git push`.
 Vercel redeploys jayastra.com within a minute or two.
 

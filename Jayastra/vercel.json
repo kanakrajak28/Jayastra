@@ -12,7 +12,7 @@
       ]
     },
     {
-      "source": "/(logo.png|logo-dark.png|logo-sm.png|logo-dark-sm.png|favicon.png|favicon-32.png|apple-touch-icon.png|og.png)",
+      "source": "/(logo.png|logo-dark.png|favicon.png|favicon-32.png|apple-touch-icon.png|og.png)",
       "headers": [
         {
           "key": "Cache-Control",
