@@ -1,6 +1,6 @@
-import { useState } from '../lib/react';
+import { useEffect, useRef, useState } from '../lib/react';
 import { EASE, img, isFine } from '../lib/utils';
-import { AnimatePresence, motion } from '../lib/motion';
+import { AnimatePresence, afterRender, motion } from '../lib/motion';
 import { Arrow, Reveal, SectionHead } from './shared';
 
 /* ======================================================================
@@ -241,9 +241,62 @@ const DISC_INFO = [
     text: 'Social, ads and an ongoing retainer, built to a system so the work stays on-brand week after week.',
   },
 ];
+// opening and closing a row: a gentle ease-in-out, with the content fading in once the row has started to open
+const OPEN = {
+  height: { duration: 0.6, ease: [0.45, 0, 0.2, 1] },
+  opacity: { duration: 0.4, delay: 0.12, ease: 'easeOut' },
+};
+const CLOSE = {
+  height: { duration: 0.55, ease: [0.45, 0, 0.2, 1] },
+  opacity: { duration: 0.2, ease: 'easeOut' },
+};
+
+// While a row above collapses, everything below it moves up. Scroll by the same amount for the length of
+// the animation, so the row that was hovered or tapped stays where it is and opens downward.
+function keepInPlace(el) {
+  const top = el.getBoundingClientRect().top;
+  const start = performance.now();
+  const root = document.documentElement;
+  // the page has scroll-behavior: smooth, which would turn each correction into a slow scroll that lags behind
+  root.style.scrollBehavior = 'auto';
+  let stopped = false;
+  const stop = () => {
+    stopped = true;
+  };
+  window.addEventListener('wheel', stop, { passive: true });
+  window.addEventListener('touchmove', stop, { passive: true });
+  const step = () => {
+    const shift = el.getBoundingClientRect().top - top;
+    if (!stopped && Math.abs(shift) > 0.5) {
+      const y = window.scrollY + shift;
+      if (window.__lenis) window.__lenis.scrollTo(y, { immediate: true, force: true });
+      window.scrollTo(0, y);
+    }
+    if (!stopped && performance.now() - start < 700) afterRender(step);
+    else {
+      root.style.scrollBehavior = '';
+      window.removeEventListener('wheel', stop);
+      window.removeEventListener('touchmove', stop);
+    }
+  };
+  afterRender(step);
+}
+
 export function Services() {
   const [active, setActive] = useState(0);
   const [failed, setFailed] = useState({});
+  const hoverTimer = useRef(0);
+  useEffect(() => () => clearTimeout(hoverTimer.current), []);
+  const open = (k, head) => {
+    if (k === active) return;
+    if (head) keepInPlace(head);
+    setActive(k);
+  };
+  // a row opens only once the cursor rests on it, so moving across the list doesn't flip rows open
+  const hoverOpen = (k, head) => {
+    clearTimeout(hoverTimer.current);
+    hoverTimer.current = setTimeout(() => open(k, head), 150);
+  };
   return (
     <section id="services" className="band line-top">
       <div className="wrap">
@@ -301,16 +354,17 @@ export function Services() {
                 <li
                   key={d.name}
                   className={'svc-row' + (on ? ' on' : '')}
-                  onMouseEnter={() => {
-                    if (isFine()) setActive(k);
+                  onMouseEnter={(e) => {
+                    if (isFine()) hoverOpen(k, e.currentTarget.querySelector('.svc-head'));
                   }}
+                  onMouseLeave={() => clearTimeout(hoverTimer.current)}
                 >
                   <button
                     className="svc-head"
                     aria-expanded={on}
                     aria-controls={'svc-' + k}
-                    onClick={() => setActive(k)}
-                    onFocus={() => setActive(k)}
+                    onClick={(e) => open(k, e.currentTarget)}
+                    onFocus={(e) => open(k, e.currentTarget)}
                   >
                     <span className="svc-n">{String(k + 1).padStart(2, '0')}</span>
                     <span className="svc-name">
@@ -328,9 +382,8 @@ export function Services() {
                         className="svc-body"
                         key="b"
                         initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.45, ease: EASE }}
+                        animate={{ height: 'auto', opacity: 1, transition: OPEN }}
+                        exit={{ height: 0, opacity: 0, transition: CLOSE }}
                       >
                         <p>{DISC_INFO[k].text}</p>
                         <ul>
