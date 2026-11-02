@@ -58,14 +58,8 @@ export function App() {
   const [loc, setLoc] = useState(routeOf);
   const route = parseRoute(loc);
   const hash = loc.anchor;
-  const [loading, setLoading] = useState(() => {
-    if (reduce || route.page !== 'home') return false;
-    // a refresh plays it again; coming back to home from another page of the site skips it
-    let reload = false;
-    try { const nav = performance.getEntriesByType('navigation')[0]; reload = !!nav && nav.type === 'reload'; } catch (e) { /* ignore */ }
-    try { if (!reload && sessionStorage.getItem('jy-seen')) return false; } catch (e) { /* ignore */ }
-    return true;
-  });
+  // the intro plays on every load of the home page; moving to home from another page of the site doesn't reload, so it doesn't replay
+  const [loading, setLoading] = useState(() => !reduce && route.page === 'home');
   // no preloader means nothing will call done(), so the hero must be shown straight away
   const [ready, setReady] = useState(!loading);
   useEffect(() => {
@@ -165,7 +159,7 @@ export function App() {
     if (l) { if (loading) l.stop(); else l.start(); }
   }, [loading]);
   const reveal = useCallback(() => setReady(true), []);
-  const done = useCallback(() => { setReady(true); setLoading(false); try { sessionStorage.setItem('jy-seen', '1'); } catch (e) { /* ignore */ } }, []);
+  const done = useCallback(() => { setReady(true); setLoading(false); }, []);
   return (
     <>
       {loading ? <Preloader onReveal={reveal} onDone={done} /> : null}
