@@ -20,14 +20,16 @@ export function Preloader({ onReveal, onDone }) {
     setTimeout(onReveal, 240);
     setTimeout(onDone, 1150);
   }, [onReveal, onDone]);
+  // each word is timed from when the previous one rendered, so on a busy phone a word stays a little longer instead of the rest being skipped
   useEffect(() => {
-    const timers = [];
-    let t = 280;
-    for (let k = 1; k < HELLOS.length; k++) { const n = k; timers.push(setTimeout(() => setI(n), t)); t += 125; }
-    timers.push(setTimeout(leave, t + 20));
+    const last = i === HELLOS.length - 1;
+    const id = setTimeout(() => (last ? leave() : setI(i + 1)), i === 0 ? 280 : (last ? 145 : 125));
+    return () => clearTimeout(id);
+  }, [i, leave]);
+  useEffect(() => {
     const onKey = () => leave();
     window.addEventListener('keydown', onKey);
-    return () => { timers.forEach(clearTimeout); window.removeEventListener('keydown', onKey); };
+    return () => window.removeEventListener('keydown', onKey);
   }, [leave]);
   const curve = Math.min(240, vp.h * 0.28);
   const from = 'M0 0 L' + vp.w + ' 0 L' + vp.w + ' ' + vp.h + ' Q' + vp.w / 2 + ' ' + (vp.h + curve) + ' 0 ' + vp.h + ' L0 0Z';
