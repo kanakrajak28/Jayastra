@@ -23,12 +23,13 @@
 <meta name="twitter:description" content="Identity, signage and menus that hold together on a storefront, a table and a phone screen.">
 <meta name="twitter:image" content="https://images.unsplash.com/photo-1567880905822-56f8e06fe630?auto=format&amp;fit=crop&amp;w=1200&amp;h=630&amp;q=70">
 <link rel="preload" href="/app.js?v=f394f562ec" as="script">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="preconnect" href="https://images.unsplash.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- fonts load without holding up the first paint (text shows in the fallback font, then swaps) -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
 
 <style>
 /* Layout: white editorial canvas, 1400px measure with wide gutters and hairline-divided bands.
@@ -113,6 +114,7 @@ section[id],footer[id]{scroll-margin-top:72px}
 .boot,.loader{position:fixed;inset:0;z-index:300;color:#fff}
 .boot{display:grid;place-items:center;background:var(--night)}
 .boot span,.hello{display:inline-flex;align-items:center;gap:16px;font-size:clamp(40px,6vw,76px);font-weight:560;letter-spacing:-.04em;line-height:1}
+.boot-quiet span{visibility:hidden}
 .boot i,.hello-dot{width:12px;height:12px;border-radius:50%;background:var(--brand-hi);flex:none}
 .loader{cursor:pointer}
 .loader svg{position:absolute;left:0;top:0;width:100%;overflow:visible}
@@ -987,26 +989,45 @@ input,textarea,[contenteditable=true]{cursor:text!important}
 <body>
 
 
-<script>window.__ROUTING="path";window.__ASSET_BASE="/";window.__LOGO_LIGHT="/logo.png";window.__LOGO_DARK="/logo-dark.png";</script>
+<script>window.__ROUTING="path";window.__ASSET_BASE="/";window.__LOGO_LIGHT="/logo-sm.png";window.__LOGO_DARK="/logo-dark-sm.png";</script>
 <a class="skip" href="#main">Skip to content</a>
 <div id="boot" class="boot" aria-hidden="true"><span><i></i>Hello</span></div>
-<div id="root"></div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
 <script>
-  /* Framer Motion's UMD build expects a JSX runtime global; map it onto React.createElement. */
+  /* The boot screen now paints before the scripts arrive; keep "Hello" only when the intro will play (same rules as App.jsx). */
   (function () {
-    if (!window.React || window.jsxRuntime) return;
-    var mk = function (type, props, key) {
-      return React.createElement(type, key === undefined ? props : Object.assign({}, props, { key: key }));
-    };
-    window.jsxRuntime = { Fragment: React.Fragment, jsx: mk, jsxs: mk };
+    try {
+      var p = location.pathname.replace(/\/index\.html$/, '').replace(/\/+$/, '');
+      var home = window.__ROUTING === 'path' ? (!p || p === '/industries') : (location.hash || '').indexOf('#/') !== 0;
+      var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+      var seen = !(nav && nav.type === 'reload') && sessionStorage.getItem('jy-seen');
+      if (!home || seen || matchMedia('(prefers-reduced-motion: reduce)').matches) document.getElementById('boot').className += ' boot-quiet';
+    } catch (e) { /* ignore */ }
   })();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/framer-motion@12.7.3/dist/framer-motion.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
-<script src="/app.js?v=f394f562ec"></script>
+<div id="root"></div>
+
+<script>
+  /* Framer Motion's UMD build expects a JSX runtime global; map it onto React.createElement.
+     The scripts below are deferred, so React isn't loaded yet: build the runtime when Framer Motion asks for it. */
+  (function () {
+    if (window.jsxRuntime) return;
+    var rt;
+    Object.defineProperty(window, 'jsxRuntime', { configurable: true, get: function () {
+      if (!rt && window.React) {
+        var mk = function (type, props, key) {
+          return React.createElement(type, key === undefined ? props : Object.assign({}, props, { key: key }));
+        };
+        rt = { Fragment: React.Fragment, jsx: mk, jsxs: mk };
+      }
+      return rt;
+    } });
+  })();
+</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/framer-motion@12.7.3/dist/framer-motion.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script defer src="/app.js?v=f394f562ec"></script>
 
 </body>
 </html>
