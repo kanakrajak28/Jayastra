@@ -21,7 +21,7 @@ Live at https://www.jayastra.com, deployed by Vercel from this repo.
 | `components/shared.jsx` | Small shared pieces: `Arrow`, `Reveal`, `SectionHead`, `MagLink`, `EyeButton` |
 | `components/Preloader.jsx` | "Hello" intro screen |
 | `components/Header.jsx` | Top navigation (`NAV` links) |
-| `components/Hero.jsx` | Hero headline |
+| `components/Hero.jsx` | Hero headline and WebGL light |
 | `components/Statement.jsx` | Marquee and the studio statement |
 | `components/Work.jsx` | Work section: the page-turning photo album |
 | `components/Services.jsx` | Services on the home page: the six disciplines, each linking to its page; holds the data (`DISCIPLINES`, `DISC_INFO`, `SERVICE_SLUGS`) |
