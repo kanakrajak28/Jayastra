@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from '../lib/react';
-import { EASE, img } from '../lib/utils';
+import { useState } from '../lib/react';
+import { EASE, img, to } from '../lib/utils';
 import { AnimatePresence, motion } from '../lib/motion';
 import { Arrow, Reveal, SectionHead } from './shared';
 
 /* ======================================================================
-   Services: every discipline open in a column, with a photo panel that
-   stays in view and follows the discipline being read
+   Services: the six disciplines on the home page; each opens its own page
+   (pages/ServicePage.jsx) with every service in it
    ====================================================================== */
-const DISCIPLINES = [
+export const DISCIPLINES = [
   {
     name: 'Research',
     note: 'Know the user before you design',
@@ -204,7 +204,7 @@ const DISCIPLINES = [
     ],
   },
 ];
-const DISC_INFO = [
+export const DISC_INFO = [
   {
     photo: 'i1a',
     alt: 'A hand holding a phone showing an app',
@@ -242,35 +242,17 @@ const DISC_INFO = [
     text: 'Social, ads and an ongoing retainer, built to a system so the work stays on-brand week after week.',
   },
 ];
+// page addresses: /services/research, /services/brand, ... (same order as DISCIPLINES)
+export const SERVICE_SLUGS = ['research', 'brand', 'digital', 'build', '3d-motion', 'growth'];
+export const serviceBySlug = (slug) => {
+  const k = SERVICE_SLUGS.indexOf(slug);
+  return k < 0 ? null : Object.assign({ k, slug }, DISCIPLINES[k], DISC_INFO[k]);
+};
+
 export function Services() {
   const [active, setActive] = useState(0);
   const [failed, setFailed] = useState({});
-  const blocks = useRef([]);
-  // the discipline crossing a line just above the middle of the screen is the one being read
-  useEffect(() => {
-    if (!('IntersectionObserver' in window)) return undefined;
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) setActive(blocks.current.indexOf(e.target));
-        });
-      },
-      { rootMargin: '-45% 0px -54% 0px' },
-    );
-    blocks.current.forEach((el) => el && io.observe(el));
-    return () => io.disconnect();
-  }, []);
-  const photo = (k, className) =>
-    !failed[k] ? (
-      <img
-        className={className}
-        src={img(DISC_INFO[k].photo)}
-        alt={DISC_INFO[k].alt}
-        loading="lazy"
-        decoding="async"
-        onError={() => setFailed((f) => Object.assign({}, f, { [k]: true }))}
-      />
-    ) : null;
+  const d = DISCIPLINES[active];
   return (
     <section id="services" className="band line-top">
       <div className="wrap">
@@ -282,84 +264,63 @@ export function Services() {
         <div className="svc">
           <div className="svc-aside" aria-hidden="true">
             <div className="svc-media">
-              {DISCIPLINES.map((d, k) => (
+              {DISCIPLINES.map((x, k) => (
                 <motion.div
-                  key={d.name}
+                  key={x.name}
                   className="svc-layer"
                   style={{ background: DISC_INFO[k].bg }}
                   initial={false}
-                  animate={{ opacity: k === active ? 1 : 0, scale: k === active ? 1 : 1.06 }}
-                  transition={{ duration: 0.8, ease: EASE }}
+                  animate={{ opacity: k === active ? 1 : 0, scale: k === active ? 1 : 1.05 }}
+                  transition={{ duration: 0.7, ease: EASE }}
                 >
-                  {photo(k)}
+                  {!failed[k] ? (
+                    <img
+                      src={img(DISC_INFO[k].photo)}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      onError={() => setFailed((f) => Object.assign({}, f, { [k]: true }))}
+                    />
+                  ) : null}
                 </motion.div>
               ))}
-              <div className="svc-cap">
-                <span>
-                  {String(active + 1).padStart(2, '0')} /{' '}
-                  {String(DISCIPLINES.length).padStart(2, '0')}
-                </span>
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.b
-                    key={active}
-                    initial={{ opacity: 0, y: 14 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.35, ease: EASE }}
-                  >
-                    {DISCIPLINES[active].name}
-                  </motion.b>
-                </AnimatePresence>
-              </div>
             </div>
-            <div className="svc-progress">
-              {DISCIPLINES.map((d, k) => (
-                <span key={d.name} className={k <= active ? 'on' : ''} />
-              ))}
+            <div className="svc-cap">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={active}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.3, ease: EASE }}
+                >
+                  <span>{d.name}</span>
+                  <b>{d.note}</b>
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
-          <div className="svc-list">
-            {DISCIPLINES.map((d, k) => (
-              <article
-                key={d.name}
-                ref={(el) => {
-                  blocks.current[k] = el;
-                }}
-                className={'svc-block' + (k === active ? ' on' : '')}
-                aria-labelledby={'svc-' + k}
-              >
-                <div className="svc-block-media">{photo(k)}</div>
-                <Reveal className="svc-title" amount={0.4}>
-                  <span className="svc-n">{String(k + 1).padStart(2, '0')}</span>
-                  <h3 id={'svc-' + k} className="svc-name">
-                    {d.name}
-                    {d.edge ? <em>Our edge</em> : null}
-                  </h3>
-                </Reveal>
-                <Reveal delay={0.06} amount={0.3}>
-                  <p className="svc-note">{d.note}</p>
-                  <p className="svc-text">{DISC_INFO[k].text}</p>
-                </Reveal>
-                <ul className="svc-items">
-                  {d.items.map(([t, desc], i) => (
-                    <Reveal
-                      as="li"
-                      key={t}
-                      delay={0.04 * (i % 2) + 0.03 * Math.floor(i / 2)}
-                      y={18}
-                      amount={0.5}
-                    >
-                      <b>{t}</b>
-                      <span>{desc}</span>
-                    </Reveal>
-                  ))}
-                </ul>
-                <a className="svc-link" href="#contact">
-                  Enquire about {d.name.toLowerCase()} <Arrow />
+          <ul className="svc-list">
+            {DISCIPLINES.map((x, k) => (
+              <Reveal as="li" key={x.name} delay={k * 0.05} y={24}>
+                <a
+                  className={'svc-row' + (k === active ? ' on' : '')}
+                  href={to('/services/' + SERVICE_SLUGS[k])}
+                  onMouseEnter={() => setActive(k)}
+                  onFocus={() => setActive(k)}
+                >
+                  <span className="svc-name">
+                    {x.name}
+                    {x.edge ? <em>Our edge</em> : null}
+                  </span>
+                  <span className="svc-count">{x.items.length} services</span>
+                  <span className="svc-arrow" aria-hidden="true">
+                    <Arrow />
+                  </span>
                 </a>
-              </article>
+              </Reveal>
             ))}
-          </div>
+          </ul>
         </div>
       </div>
     </section>

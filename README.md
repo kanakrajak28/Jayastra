@@ -24,7 +24,7 @@ Live at https://www.jayastra.com, deployed by Vercel from this repo.
 | `components/Hero.jsx` | Hero headline |
 | `components/Statement.jsx` | Marquee and the studio statement |
 | `components/Work.jsx` | Work section: the page-turning photo album |
-| `components/Services.jsx` | Services: all six disciplines open, with a photo panel that follows the scroll (`DISCIPLINES`, `DISC_INFO`) |
+| `components/Services.jsx` | Services on the home page: the six disciplines, each linking to its page; holds the data (`DISCIPLINES`, `DISC_INFO`, `SERVICE_SLUGS`) |
 | `components/Industries.jsx` | Industries list (`INDUSTRIES`, `SECTOR_SLUGS`) |
 | `components/CaseStudies.jsx` | Case study data (`CASES`, `FEATURED`) and the home-page case studies section |
 | `components/Process.jsx` | Process timeline (`STEPS`) |
@@ -38,6 +38,7 @@ Live at https://www.jayastra.com, deployed by Vercel from this repo.
 | `components/Contact.jsx` | Contact section (tile background, layout) |
 | `components/Booker.jsx` | The booking / enquiry form (sends by email) |
 | `components/Footer.jsx` | Footer, big wordmark, clock |
+| `pages/ServicePage.jsx` | A service page (`/services/brand` etc.): description and every service in that discipline |
 | `pages/SectorPage.jsx`, `CasePage.jsx`, `WorkIndex.jsx`, `NotFound.jsx`, `Legal.jsx` | Inner pages; `PageShell.jsx` wraps them |
 
 `build.py` bundles everything from `main.jsx` with esbuild, and reads the industry, case-study and image data from these files to make the per-page titles and the sitemap. Keep those data arrays in the same format.

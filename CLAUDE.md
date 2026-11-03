@@ -3,7 +3,7 @@
 This repo is the Jayastra studio website (jayastra.com), deployed by Vercel from the `Jayastra/` folder on the `main` branch.
 
 - Edit only the files in `source/src/`: one component file per section (`components/`, `pages/`, `App.jsx` for routes; map in README.md) and `shell.html` (CSS). Never hand-edit `Jayastra/`.
-- After any change run `cd source && python build.py`, which regenerates `Jayastra/` (46 pre-rendered routes + 404, sitemap.xml, robots.txt, vercel.json). It must print "built preview ... deploy pages 46".
+- After any change run `cd source && python build.py`, which regenerates `Jayastra/` (52 pre-rendered routes + 404, sitemap.xml, robots.txt, vercel.json). It must print "built preview ... deploy pages 52".
 - Then `git add -A`, commit with a clear message, and `git push origin main`.
 - Brand: orange #D24E01, ink #0E0E10, white. Fonts Inter Tight / Inter.
 - The owner's rule: don't change the wording of existing text unless asked; avoid decorative elements that look AI-generated.

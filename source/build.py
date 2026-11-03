@@ -51,6 +51,13 @@ sectors = {s: {'name': n, 'photo': p, 'text': t} for s, (n, p, t) in zip(slugs, 
 cases = re.findall(r"\[\s*'([\w-]+)',\s*" + STR + r",\s*'([\w-]+)',\s*" + STR + r",\s*'(\d{4})',\s*" + STR + r",\s*" + SKIP + r",\s*" + SKIP + r",\s*" + SKIP + r",\s*\[\s*'([\w-]+)'", app)
 cases = [(slug, lit(name), sec, lit(services), year, lit(summary), im0) for slug, name, sec, services, year, summary, im0 in cases]
 assert len(cases) == 28, len(cases)
+svc_slugs = re.findall(r"'([\w-]+)'", re.search(r"const SERVICE_SLUGS = \[([^\]]*)\]", app).group(1))
+disc = app[app.index('export const DISCIPLINES'):app.index('export const DISC_INFO')]
+info = app[app.index('export const DISC_INFO'):app.index('export const SERVICE_SLUGS')]
+svc_names = [lit(n) for n in re.findall(r"name:\s*" + STR, disc)]
+svc_texts = [lit(t) for t in re.findall(r"text:\s*" + STR, info)]
+svc_photos = re.findall(r"photo:\s*'([\w-]+)'", info)
+assert len(svc_slugs) == len(svc_names) == len(svc_texts) == len(svc_photos) == 6, (svc_slugs, svc_names)
 remote = dict(re.findall(r"(\w+): '(\d{10,13}-[0-9a-f]{12})'", app[app.index('const REMOTE = {'):app.index('const REMOTE_FB')]))
 hi = dict(re.findall(r"(\w+): '(\d{10,13}-[0-9a-f]{12})'", app[app.index('const HI = {'):app.index('const FB_BY_ID')]))
 
@@ -64,6 +71,8 @@ routes = [('/', 'Jayastra | Brand, digital & 3D design studio in Jabalpur, India
 routes.append(('/work', 'Case studies | Jayastra', 'Concept projects across 14 sectors, from brand identity and packaging to product UI and 3D renders.', DOMAIN + '/og.png', '0.8'))
 for s, d in sectors.items():
     routes.append(('/industries/' + s, d['name'] + ' design & 3D | Jayastra', d['text'], share_img(d['photo']), '0.8'))
+for slug, name, text, photo in zip(svc_slugs, svc_names, svc_texts, svc_photos):
+    routes.append(('/services/' + slug, name + ' services | Jayastra', text, share_img(photo), '0.8'))
 for slug, name, sec, services, year, summary, im0 in cases:
     routes.append(('/work/' + slug, name + ' · ' + services + ' | Jayastra', summary, share_img(im0), '0.6'))
 routes.append(('/privacy', 'Privacy Policy | Jayastra', 'How Jayastra collects, uses and protects your personal information.', DOMAIN + '/og.png', '0.3'))

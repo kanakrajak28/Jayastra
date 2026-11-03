@@ -18,6 +18,8 @@ import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
 import { CaseStudies, caseBySlug, sectorBySlug } from './components/CaseStudies';
 import { SectorPage } from './pages/SectorPage';
+import { ServicePage } from './pages/ServicePage';
+import { serviceBySlug } from './components/Services';
 import { CasePage } from './pages/CasePage';
 import { WorkIndex } from './pages/WorkIndex';
 import { NotFound } from './pages/NotFound';
@@ -40,6 +42,8 @@ const parseRoute = ({ path, anchor }) => {
   if (!path) return { page: 'home', anchor };
   let m = path.match(/^\/industries(?:\/([\w-]+))?$/);
   if (m) return m[1] ? { page: 'sector', slug: m[1] } : { page: 'home', anchor: '#industries' };
+  m = path.match(/^\/services(?:\/([\w-]+))?$/);
+  if (m) return m[1] ? { page: 'service', slug: m[1] } : { page: 'home', anchor: '#services' };
   m = path.match(/^\/work(?:\/([\w-]+))?$/);
   if (m) return m[1] ? { page: 'case', slug: m[1] } : { page: 'work' };
   if (path === '/privacy') return { page: 'privacy' };
@@ -52,6 +56,10 @@ const routeMeta = (r) => {
   if (r.page === 'sector') {
     const sec = sectorBySlug(r.slug);
     if (sec) return [sec.name + ' design & 3D | Jayastra', sec.text];
+  }
+  if (r.page === 'service') {
+    const s = serviceBySlug(r.slug);
+    if (s) return [s.name + ' services | Jayastra', s.text];
   }
   if (r.page === 'case') {
     const c = caseBySlug(r.slug);
@@ -258,6 +266,7 @@ export function App() {
       {loading ? <Preloader onReveal={reveal} onDone={done} /> : null}
       <Header ready={ready} />
       {route.page === 'sector' ? <SectorPage key={pageKey} slug={route.slug} /> : null}
+      {route.page === 'service' ? <ServicePage key={pageKey} slug={route.slug} /> : null}
       {route.page === 'case' ? <CasePage key={pageKey} slug={route.slug} /> : null}
       {route.page === 'work' ? <WorkIndex /> : null}
       {route.page === 'privacy' ? <PrivacyPage /> : null}
