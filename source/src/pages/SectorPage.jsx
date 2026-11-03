@@ -18,7 +18,7 @@ export function SectorPage({ slug }) {
         <div className="ip-shade" />
         <div className="wrap ip-in">
           <nav className="ip-crumb" aria-label="Breadcrumb">
-            <a href="#industries">Industries</a>
+            <a href={to('/work')}>Case studies</a>
             <span>/</span>
             <span>{sec.name}</span>
           </nav>

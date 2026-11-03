@@ -25,7 +25,7 @@ Live at https://www.jayastra.com, deployed by Vercel from this repo.
 | `components/Statement.jsx` | Marquee and the studio statement |
 | `components/Work.jsx` | Work section: the page-turning photo album |
 | `components/Services.jsx` | Services on the home page: the six disciplines, each linking to its page; holds the data (`DISCIPLINES`, `DISC_INFO`, `SERVICE_SLUGS`) |
-| `components/Industries.jsx` | Industries list (`INDUSTRIES`, `SECTOR_SLUGS`) |
+| `components/Industries.jsx` | Sector data (`INDUSTRIES`, `SECTOR_SLUGS`) used by case studies, the Work filters and sector pages. Its home-page section is no longer shown |
 | `components/CaseStudies.jsx` | Case study data (`CASES`, `FEATURED`) and the home-page case studies section |
 | `components/Process.jsx` | Process timeline (`STEPS`) |
 | `components/Mark3D.jsx` | 3D spear from the logo |

@@ -6,7 +6,6 @@ import { Hero } from './components/Hero';
 import { Statement } from './components/Statement';
 import { Work } from './components/Work';
 import { Services } from './components/Services';
-import { Industries } from './components/Industries';
 import { Process } from './components/Process';
 import { Mark3D } from './components/Mark3D';
 import { Stats } from './components/Stats';
@@ -41,7 +40,7 @@ const routeOf = () => {
 const parseRoute = ({ path, anchor }) => {
   if (!path) return { page: 'home', anchor };
   let m = path.match(/^\/industries(?:\/([\w-]+))?$/);
-  if (m) return m[1] ? { page: 'sector', slug: m[1] } : { page: 'home', anchor: '#industries' };
+  if (m) return m[1] ? { page: 'sector', slug: m[1] } : { page: 'work' };
   m = path.match(/^\/services(?:\/([\w-]+))?$/);
   if (m) return m[1] ? { page: 'service', slug: m[1] } : { page: 'home', anchor: '#services' };
   m = path.match(/^\/work(?:\/([\w-]+))?$/);
@@ -278,7 +277,6 @@ export function App() {
           <Statement />
           <Work />
           <Services />
-          <Industries />
           <CaseStudies />
           <Process />
           <Mark3D />

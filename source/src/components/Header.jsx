@@ -9,7 +9,6 @@ import { MagLink } from './shared';
 const NAV = [
   ['Work', '#work'],
   ['Services', '#services'],
-  ['Industries', '#industries'],
   ['Case studies', '#case-studies'],
   ['Process', '#process'],
   ['Pricing', '#pricing'],
