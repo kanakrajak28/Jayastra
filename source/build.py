@@ -30,10 +30,17 @@ r = subprocess.run(([esb] if esb else ['npx', '--yes', 'esbuild@0.24.0']) + ['--
 if r.returncode != 0:
     print(r.stderr); sys.exit(1)
 shell = shell[:a] + '\n' + r.stdout.strip() + '\n' + shell[b:]
+# logos are shown at most a few hundred pixels wide, so the page uses 640px copies (the full-size files stay for share images and JSON-LD)
+from PIL import Image
+for f in ['logo.png', 'logo-dark.png']:
+    im = Image.open(out / f).convert('RGBA')
+    sm = im.resize((640, round(im.height * 640 / im.width)), Image.LANCZOS)
+    sm.quantize(128, method=Image.FASTOCTREE).save(out / f.replace('.png', '-sm.png'), optimize=True)
 enc = lambda f: 'data:image/png;base64,' + base64.b64encode((out / f).read_bytes()).decode()
 
 # ---------- 1. preview (hash routing, inline logos, images as files) ----------
-preview = shell.replace('/*__APP__*/', js).replace('/*__LOGOS__*/', 'window.__LOGO_LIGHT="' + enc('logo.png') + '";window.__LOGO_DARK="' + enc('logo-dark.png') + '";')
+# the libraries are deferred, so the inline app waits for them
+preview = shell.replace('/*__APP__*/', "document.addEventListener('DOMContentLoaded',function(){" + js + '});').replace('/*__LOGOS__*/', 'window.__LOGO_LIGHT="' + enc('logo-sm.png') + '";window.__LOGO_DARK="' + enc('logo-dark-sm.png') + '";')
 (out / 'index.html').write_text(preview, encoding='utf-8')
 (src / 'app.compiled.js').write_text(js, encoding='utf-8')
 
@@ -92,17 +99,17 @@ if dep.exists(): shutil.rmtree(dep)
 dep.mkdir()
 (dep / 'app.js').write_text(js.replace('<\\/script', '</script'), encoding='utf-8')
 shutil.copytree(out / 'img', dep / 'img')
-for f in ['logo.png', 'logo-dark.png']: shutil.copy(out / f, dep / f)
+for f in ['logo.png', 'logo-dark.png', 'logo-sm.png', 'logo-dark-sm.png']: shutil.copy(out / f, dep / f)
 
 css_end = shell.index('</style>') + len('</style>')
 head_src, body_src = shell[:css_end], shell[css_end:]
 head_src = re.sub(r'<meta charset="utf-8">\n', '', head_src, count=1)
 head_src = re.sub(r'<title>.*?</title>\n', '', head_src, count=1)
 head_src = re.sub(r'<meta name="description"[^>]*>\n', '', head_src, count=1)
-body_prod = body_src.replace('<script>/*__LOGOS__*/</script>', '<script>window.__ROUTING="path";window.__ASSET_BASE="/";window.__LOGO_LIGHT="/logo.png";window.__LOGO_DARK="/logo-dark.png";</script>')
+body_prod = body_src.replace('<script>/*__LOGOS__*/</script>', '<script>window.__ROUTING="path";window.__ASSET_BASE="/";window.__LOGO_LIGHT="/logo-sm.png";window.__LOGO_DARK="/logo-dark-sm.png";</script>')
 # versioned URL so browsers fetch the new app.js right after each deploy instead of a cached copy
 APP_URL = '/app.js?v=' + hashlib.sha1(js.encode('utf-8')).hexdigest()[:10]
-body_prod = re.sub(r'<script>\s*/\*__APP__\*/\s*</script>', '<script src="%s"></script>' % APP_URL, body_prod)
+body_prod = re.sub(r'<script>\s*/\*__APP__\*/\s*</script>', '<script defer src="%s"></script>' % APP_URL, body_prod)
 assert '/*__APP__*/' not in body_prod and '/*__LOGOS__*/' not in body_prod
 
 def page(path, title, desc, image, ld=False, robots='index, follow'):
@@ -152,7 +159,7 @@ sm.append('</urlset>')
     'cleanUrls': True, 'trailingSlash': False,
     'headers': [
         {'source': '/img/(.*)', 'headers': [{'key': 'Cache-Control', 'value': 'public, max-age=31536000, immutable'}]},
-        {'source': '/(logo.png|logo-dark.png|favicon.png|favicon-32.png|apple-touch-icon.png|og.png)', 'headers': [{'key': 'Cache-Control', 'value': 'public, max-age=604800'}]},
+        {'source': '/(logo.png|logo-dark.png|logo-sm.png|logo-dark-sm.png|favicon.png|favicon-32.png|apple-touch-icon.png|og.png)', 'headers': [{'key': 'Cache-Control', 'value': 'public, max-age=604800'}]},
         {'source': '/app.js', 'headers': [{'key': 'Cache-Control', 'value': 'public, max-age=3600, must-revalidate'}]},
     ],
 }, indent=2), encoding='utf-8')

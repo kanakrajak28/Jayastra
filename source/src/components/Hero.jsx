@@ -99,9 +99,23 @@ function HeroLight() {
     const uTime = gl.getUniformLocation(prog, 'uTime');
     const uMouse = gl.getUniformLocation(prog, 'uMouse');
     const reduce = reducedNow();
+    // without a GPU (software WebGL) every frame of this shader blocks the page, so show one still frame
+    let software = false;
+    try {
+      const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+      software =
+        !!dbg &&
+        /swiftshader|llvmpipe|software|basic render/i.test(
+          gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL),
+        );
+    } catch (e) {
+      software = false;
+    }
     const mouse = { x: 0.5, y: 0.5, tx: 0.5, ty: 0.5 };
     let raf = 0,
-      visible = true;
+      visible = true,
+      still = reduce || software,
+      frozen = 14;
     const start = performance.now();
     const resize = () => {
       const r = canvas.getBoundingClientRect();
@@ -109,19 +123,35 @@ function HeroLight() {
       canvas.width = Math.max(2, Math.round(r.width * scale));
       canvas.height = Math.max(2, Math.round(r.height * scale));
       gl.viewport(0, 0, canvas.width, canvas.height);
-      if (reduce) draw(performance.now());
+      if (still) draw(performance.now());
     };
     const draw = (now) => {
       mouse.x += (mouse.tx - mouse.x) * 0.04;
       mouse.y += (mouse.ty - mouse.y) * 0.04;
       gl.uniform2f(uRes, canvas.width, canvas.height);
-      gl.uniform1f(uTime, reduce ? 14 : (now - start) / 1000 + 6);
+      gl.uniform1f(uTime, still ? frozen : (now - start) / 1000 + 6);
       gl.uniform2f(uMouse, mouse.x, mouse.y);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
+    // safety net for slow devices: once the page has settled, freeze on the current frame if it runs under ~20 fps
+    const gaps = [];
+    let prev = 0;
     const loop = (now) => {
       raf = requestAnimationFrame(loop);
-      if (visible) draw(now);
+      if (!visible || document.hidden) {
+        prev = 0;
+        return;
+      }
+      draw(now);
+      if (now - start > 2000 && gaps.length < 20) {
+        if (prev) gaps.push(now - prev);
+        if (gaps.length === 20 && gaps.slice().sort((a, b) => a - b)[10] > 50) {
+          frozen = (now - start) / 1000 + 6;
+          still = true;
+          cancelAnimationFrame(raf);
+        }
+      }
+      prev = now;
     };
     const onMove = (e) => {
       const r = canvas.getBoundingClientRect();
@@ -140,7 +170,7 @@ function HeroLight() {
         : null;
     if (io) io.observe(canvas);
     window.addEventListener('pointermove', onMove, { passive: true });
-    if (reduce) draw(performance.now());
+    if (still) draw(performance.now());
     else raf = requestAnimationFrame(loop);
     return () => {
       cancelAnimationFrame(raf);

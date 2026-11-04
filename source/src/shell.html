@@ -1,12 +1,13 @@
 <meta charset="utf-8">
 <title>Jayastra</title>
 <meta name="description" content="Jayastra is an independent design studio for brand identity, digital product and 3D visuals, based in Jabalpur and working worldwide.">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="preconnect" href="https://images.unsplash.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- fonts load without holding up the first paint (text shows in the fallback font, then swaps) -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
 
 <style>
 /* Layout: white editorial canvas, 1400px measure with wide gutters and hairline-divided bands.
@@ -375,6 +376,9 @@ footer[id] {
   inset: 0;
   z-index: 300;
   color: #fff;
+}
+.boot-quiet {
+  display: none !important;
 }
 .boot {
   display: grid;
@@ -6175,22 +6179,40 @@ h4,
 <script>/*__LOGOS__*/</script>
 <a class="skip" href="#main">Skip to content</a>
 <div id="boot" class="boot" aria-hidden="true"><span><i></i>Hello</span></div>
-<div id="root"></div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
 <script>
-  /* Framer Motion's UMD build expects a JSX runtime global; map it onto React.createElement. */
+  /* The boot screen paints before the scripts arrive. Keep it only where the intro will play
+     (the home page, without reduced motion; same rule as App.jsx), so other pages don't flash dark. */
   (function () {
-    if (!window.React || window.jsxRuntime) return;
-    var mk = function (type, props, key) {
-      return React.createElement(type, key === undefined ? props : Object.assign({}, props, { key: key }));
-    };
-    window.jsxRuntime = { Fragment: React.Fragment, jsx: mk, jsxs: mk };
+    try {
+      var p = location.pathname.replace(/\/index\.html$/, '').replace(/\/+$/, '');
+      var home = window.__ROUTING === 'path' ? !p || p === '/services' : (location.hash || '').indexOf('#/') !== 0;
+      if (!home || matchMedia('(prefers-reduced-motion: reduce)').matches) document.getElementById('boot').className += ' boot-quiet';
+    } catch (e) { /* ignore */ }
   })();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/framer-motion@12.7.3/dist/framer-motion.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<div id="root"></div>
+
+<script>
+  /* Framer Motion's UMD build expects a JSX runtime global; map it onto React.createElement.
+     The scripts below are deferred, so React isn't loaded yet: build the runtime when it is first asked for. */
+  (function () {
+    if (window.jsxRuntime) return;
+    var rt;
+    Object.defineProperty(window, 'jsxRuntime', { configurable: true, get: function () {
+      if (!rt && window.React) {
+        var mk = function (type, props, key) {
+          return React.createElement(type, key === undefined ? props : Object.assign({}, props, { key: key }));
+        };
+        rt = { Fragment: React.Fragment, jsx: mk, jsxs: mk };
+      }
+      return rt;
+    } });
+  })();
+</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/framer-motion@12.7.3/dist/framer-motion.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
 <script>
 /*__APP__*/
 </script>
