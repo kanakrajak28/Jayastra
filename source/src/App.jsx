@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from './lib/react';
+import { useCallback, useEffect, useRef, useState } from './lib/react';
 import { FB_BY_ID, ROUTING, localImg, reducedNow } from './lib/utils';
 import { Preloader } from './components/Preloader';
 import { Header } from './components/Header';
@@ -83,6 +83,34 @@ const routeMeta = (r) => {
   return ['Jayastra | Brand, digital & 3D design studio in Jabalpur, India', SITE_DESC];
 };
 
+// Sections below the hero are built when they come within about 1.5 screens of view, not all at once on
+// load, which keeps the first render short on phones. A click on an in-page link (#pricing, #contact, ...)
+// or an address with an anchor builds every section first, so the link lands in the right place.
+let buildAll = false;
+function Later({ children }) {
+  const ref = useRef(null);
+  const [show, setShow] = useState(
+    () => buildAll || !!window.location.hash || !('IntersectionObserver' in window),
+  );
+  useEffect(() => {
+    if (show) return undefined;
+    const go = () => setShow(true);
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) go();
+      },
+      { rootMargin: '150% 0px' },
+    );
+    io.observe(ref.current);
+    window.addEventListener('jy:build-all', go);
+    return () => {
+      io.disconnect();
+      window.removeEventListener('jy:build-all', go);
+    };
+  }, [show]);
+  return show ? children : <div ref={ref} className="later" data-later="" aria-hidden="true" />;
+}
+
 export function App() {
   const reduce = reducedNow();
   const [loc, setLoc] = useState(routeOf);
@@ -130,6 +158,17 @@ export function App() {
       }
     };
     document.addEventListener('click', onNav);
+    // build the sections that are still placeholders before an in-page link scrolls to its target
+    const buildFirst = (e) => {
+      const a = e.target.closest && e.target.closest('a[href^="#"]');
+      if (!a || a.getAttribute('href').indexOf('#/') === 0) return;
+      if (!document.querySelector('[data-later]')) return;
+      buildAll = true;
+      ReactDOM.flushSync(() => window.dispatchEvent(new Event('jy:build-all')));
+      // the smooth scroller still has the old, shorter page height; measure again before it scrolls
+      if (window.__lenis) window.__lenis.resize();
+    };
+    document.addEventListener('click', buildFirst, true);
     // swap blocked remote photos for local ones
     const onErr = (e) => {
       const t = e.target;
@@ -146,6 +185,7 @@ export function App() {
       window.removeEventListener('popstate', on);
       window.removeEventListener('jy:route', on);
       document.removeEventListener('click', onNav);
+      document.removeEventListener('click', buildFirst, true);
       document.removeEventListener('error', onErr, true);
     };
   }, []);
@@ -274,23 +314,51 @@ export function App() {
       {route.page === 'home' ? (
         <main id="main">
           <Hero ready={ready} />
-          <Statement />
-          <Work />
-          <Services />
-          <CaseStudies />
-          <Process />
-          <Mark3D />
-          <Stats />
-          <Advantage />
-          <Testimonials />
-          <Pricing />
-          <FAQ />
-          <Contact />
+          <Later>
+            <Statement />
+          </Later>
+          <Later>
+            <Work />
+          </Later>
+          <Later>
+            <Services />
+          </Later>
+          <Later>
+            <CaseStudies />
+          </Later>
+          <Later>
+            <Process />
+          </Later>
+          <Later>
+            <Mark3D />
+          </Later>
+          <Later>
+            <Stats />
+          </Later>
+          <Later>
+            <Advantage />
+          </Later>
+          <Later>
+            <Testimonials />
+          </Later>
+          <Later>
+            <Pricing />
+          </Later>
+          <Later>
+            <FAQ />
+          </Later>
+          <Later>
+            <Contact />
+          </Later>
         </main>
       ) : route.page === 'privacy' || route.page === 'terms' || route.page === '404' ? null : (
-        <Contact />
+        <Later>
+          <Contact />
+        </Later>
       )}
-      <Footer />
+      <Later>
+        <Footer />
+      </Later>
     </>
   );
 }
