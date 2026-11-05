@@ -8,4 +8,4 @@ This repo is the Jayastra studio website (jayastra.com), deployed by Vercel from
 - Brand: orange #D24E01, ink #0E0E10, white. Fonts Inter Tight / Inter.
 - The owner's rule: don't change the wording of existing text unless asked; avoid decorative elements that look AI-generated.
 - Case studies are concept projects and stay labelled "Concept project" until replaced with real client work.
-- The booking form sends by email for now; Cal.com will be connected later.
+- Calls are booked through the Cal.com calendar (cal.com/jayastra/30min) embedded in `components/Booker.jsx`; event length, availability and notifications are set in the Cal.com account.

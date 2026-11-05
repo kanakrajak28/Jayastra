@@ -36,7 +36,7 @@ Live at https://www.jayastra.com, deployed by Vercel from this repo.
 | `components/FAQ.jsx` | FAQ (`FAQS`) |
 | `components/GlyphMark.jsx` | Logo drawn in glyphs |
 | `components/Contact.jsx` | Contact section (tile background, layout) |
-| `components/Booker.jsx` | The booking / enquiry form (sends by email) |
+| `components/Booker.jsx` | The Cal.com booking calendar (cal.com/jayastra/30min), embedded in the contact section |
 | `components/Footer.jsx` | Footer, big wordmark, clock |
 | `pages/ServicePage.jsx` | A service page (`/services/brand` etc.): description and every service in that discipline |
 | `pages/SectorPage.jsx`, `CasePage.jsx`, `WorkIndex.jsx`, `NotFound.jsx`, `Legal.jsx` | Inner pages; `PageShell.jsx` wraps them |

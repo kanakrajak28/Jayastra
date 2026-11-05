@@ -134,7 +134,7 @@ const NEXT = [
     'A real reply from the designer, with any questions we need answered first.',
   ],
   [
-    'A 20-minute call',
+    'A 30-minute call',
     'We talk through the work, the timeline and roughly what it costs. No pitch deck.',
   ],
   [
@@ -266,7 +266,7 @@ export function Contact() {
             you're <em>building</em>.
           </Reveal>
           <Reveal as="p" className="contact-lede" delay={0.12}>
-            A 20-minute call, no pitch deck. We'll tell you what the work needs, roughly what it
+            A 30-minute call, no pitch deck. We'll tell you what the work needs, roughly what it
             costs, and whether we're the right studio for it.
           </Reveal>
           <Reveal className="reach" delay={0.16}>
