@@ -5,7 +5,8 @@ site/index.html      -> single-page preview (hash routes, images as files next t
                         (titles, descriptions, Open Graph, JSON-LD), shared /app.js,
                         /img, sitemap.xml, robots.txt, 404.html, favicon, share image.
 """
-import subprocess, sys, pathlib, base64, json, re, shutil, hashlib, html as H
+import subprocess, sys, pathlib, base64, json, re, shutil, hashlib, urllib.request, html as H
+from html.parser import HTMLParser
 from datetime import date
 
 root = pathlib.Path(__file__).parent
@@ -94,6 +95,107 @@ LD = {
     'knowsAbout': ['Brand identity', 'UI/UX design', 'Website design', 'Packaging design', '3D product rendering', '3D animation'],
 }
 
+# ---------- 2b. readable text in every page, structured data, llms.txt ----------
+# Search engines and AI crawlers that don't run JavaScript would otherwise see an empty page. Each route is
+# rendered once with React in Node (prerender.js), reduced to its text (headings, paragraphs, lists, links)
+# and put inside #root; the app replaces it when it loads.
+cache = root / '.cache'
+cache.mkdir(exist_ok=True)
+VENDOR = {
+    'react.production.min.js': 'https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js',
+    'react-dom-server-legacy.browser.production.min.js': 'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom-server-legacy.browser.production.min.js',
+    'framer-motion.js': 'https://cdn.jsdelivr.net/npm/framer-motion@12.7.3/dist/framer-motion.js',
+}
+for name, url in VENDOR.items():
+    if not (cache / name).exists(): urllib.request.urlretrieve(url, cache / name)
+r = subprocess.run(([esb] if esb else ['npx', '--yes', 'esbuild@0.24.0']) + [str(root / 'ssr-entry.jsx'), '--bundle', '--loader:.jsx=jsx', '--jsx=transform',
+                    '--jsx-factory=React.createElement', '--jsx-fragment=React.Fragment', '--format=iife', '--target=es2018',
+                    '--charset=utf8', '--log-level=error', '--outfile=' + str(cache / 'ssr.js')],
+                   capture_output=True, text=True, encoding='utf-8', shell=(sys.platform == 'win32'))
+if r.returncode != 0:
+    print(r.stderr); sys.exit(1)
+(cache / 'routes.json').write_text(json.dumps([p for p, *_ in routes] + ['/404']), encoding='utf-8')
+r = subprocess.run(['node', str(root / 'prerender.js'), str(cache), str(cache / 'ssr.js'), str(cache / 'routes.json'), str(cache / 'pre.json')],
+                   capture_output=True, text=True, encoding='utf-8')
+if r.returncode != 0:
+    print(r.stderr); sys.exit(1)
+pre = json.loads((cache / 'pre.json').read_text(encoding='utf-8'))
+data = pre['data']
+
+KEEP = {'h1', 'h2', 'h3', 'h4', 'p', 'ul', 'ol', 'li', 'dl', 'dt', 'dd', 'a', 'strong', 'em', 'blockquote',
+        'section', 'article', 'main', 'nav', 'footer', 'header'}
+DROP = {'svg', 'canvas', 'script', 'style', 'noscript', 'video', 'iframe', 'form', 'select', 'textarea', 'template'}
+VOID = {'img', 'input', 'br', 'hr', 'meta', 'link', 'source', 'wbr'}
+FAQ_HTML = ''.join('<h3>%s</h3><p>%s</p>' % (H.escape(q), H.escape(a)) for q, a in data['FAQS'])
+
+class Text(HTMLParser):
+    """Reduces rendered HTML to readable markup: keeps headings, paragraphs, lists and links, drops
+    decoration (images, icons, canvases, aria-hidden parts, the intro screen) and every attribute but href."""
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.out, self.stack, self.skip = [], [], 0
+    def handle_starttag(self, tag, attrs):
+        if tag in VOID: return
+        a = dict(attrs)
+        cls = a.get('class') or ''
+        drop = self.skip or tag in DROP or a.get('aria-hidden') == 'true' or 'loader' in cls.split() or 'later' in cls.split()
+        if not drop and 'faq-list' in cls.split():
+            self.out.append(FAQ_HTML)  # all answers, not just the one the accordion shows open
+            drop = True
+        self.stack.append((tag, drop))
+        if drop: self.skip += 1; return
+        b = 'strong' if tag == 'b' else tag
+        if b in KEEP:
+            self.out.append('<a href="%s">' % H.escape(a['href'], quote=True) if b == 'a' and a.get('href') else '<%s>' % b)
+    def handle_endtag(self, tag):
+        if tag in VOID or not self.stack: return
+        t, drop = self.stack.pop()
+        while t != tag and self.stack: t, drop = self.stack.pop()
+        if drop: self.skip -= 1; return
+        b = 'strong' if t == 'b' else t
+        self.out.append('</%s>' % b if b in KEEP else ' ')
+    def handle_data(self, d):
+        if not self.skip: self.out.append(H.escape(d, quote=False))
+def readable(html_src):
+    t = Text(); t.feed(html_src); s = ''.join(t.out)
+    s = re.sub(r'\s+', ' ', s)
+    for _ in range(3): s = re.sub(r'<(h[1-4]|p|li|ul|ol|dl|dt|dd|strong|em|a|section|article|nav|header|footer|blockquote)>\s*</\1>', '', s)
+    s = re.sub(r'\s*(</?(?:h[1-4]|p|li|ul|ol|dl|dt|dd|section|article|main|nav|header|footer|blockquote)>)\s*', r'\1', s)
+    return '<div class="pre">' + s.strip() + '</div>'
+
+# structured data (schema.org JSON-LD)
+ORG_ID = DOMAIN + '/#studio'
+ORG_REF = {'@type': 'ProfessionalService', '@id': ORG_ID, 'name': 'Jayastra', 'url': DOMAIN + '/'}
+CAL_URL = 'https://cal.com/jayastra/30min'
+svc_url = lambda slug: DOMAIN + '/services/' + slug
+LD.update({'@id': ORG_ID, 'hasOfferCatalog': {'@type': 'OfferCatalog', 'name': 'Design services', 'itemListElement': [
+    {'@type': 'Offer', 'itemOffered': {'@type': 'Service', 'name': d['name'], 'description': i['text'], 'url': svc_url(s)}}
+    for s, d, i in zip(data['SERVICE_SLUGS'], data['DISCIPLINES'], data['DISC_INFO'])]}})
+SITE_LD = {'@context': 'https://schema.org', '@type': 'WebSite', 'name': 'Jayastra', 'url': DOMAIN + '/', 'publisher': {'@id': ORG_ID}}
+FAQ_LD = {'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': [
+    {'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': a}} for q, a in data['FAQS']]}
+def crumbs(*items):
+    return {'@context': 'https://schema.org', '@type': 'BreadcrumbList', 'itemListElement': [
+        {'@type': 'ListItem', 'position': k + 1, 'name': n, 'item': u} for k, (n, u) in enumerate(items)]}
+HOME, WORK = ('Home', DOMAIN + '/'), ('Case studies', DOMAIN + '/work')
+lds = {'/': [LD, SITE_LD, FAQ_LD], '/work': [crumbs(HOME, WORK)]}
+for s, d, i in zip(data['SERVICE_SLUGS'], data['DISCIPLINES'], data['DISC_INFO']):
+    lds['/services/' + s] = [{'@context': 'https://schema.org', '@type': 'Service', 'name': d['name'], 'serviceType': d['name'],
+        'description': i['text'], 'url': svc_url(s), 'provider': ORG_REF, 'areaServed': 'Worldwide',
+        'hasOfferCatalog': {'@type': 'OfferCatalog', 'name': d['name'], 'itemListElement': [
+            {'@type': 'Offer', 'itemOffered': {'@type': 'Service', 'name': t, 'description': x}} for t, x in d['items']]}},
+        crumbs(HOME, ('Services', DOMAIN + '/#services'), (d['name'], svc_url(s)))]
+for s, ind in zip(data['SECTOR_SLUGS'], data['INDUSTRIES']):
+    lds['/industries/' + s] = [crumbs(HOME, WORK, (ind['name'], DOMAIN + '/industries/' + s))]
+sector_name = dict(zip(data['SECTOR_SLUGS'], (i['name'] for i in data['INDUSTRIES'])))
+for c in data['CASES']:
+    u = DOMAIN + '/work/' + c['slug']
+    lds['/work/' + c['slug']] = [{'@context': 'https://schema.org', '@type': 'CreativeWork', 'name': c['name'], 'url': u,
+        'description': c['summary'], 'genre': c['services'], 'about': sector_name.get(c['sector']), 'dateCreated': c['year'],
+        'creativeWorkStatus': 'Concept project', 'creator': ORG_REF}, crumbs(HOME, WORK, (c['name'], u))]
+for p, n in [('/privacy', 'Privacy Policy'), ('/terms', 'Terms of Use')]:
+    lds[p] = [crumbs(HOME, (n, DOMAIN + p))]
+
 # ---------- 3. production pages ----------
 if dep.exists(): shutil.rmtree(dep)
 dep.mkdir()
@@ -112,7 +214,7 @@ APP_URL = '/app.js?v=' + hashlib.sha1(js.encode('utf-8')).hexdigest()[:10]
 body_prod = re.sub(r'<script>\s*/\*__APP__\*/\s*</script>', '<script defer src="%s"></script>' % APP_URL, body_prod)
 assert '/*__APP__*/' not in body_prod and '/*__LOGOS__*/' not in body_prod
 
-def page(path, title, desc, image, ld=False, robots='index, follow'):
+def page(path, title, desc, image, robots='index, follow'):
     url = DOMAIN + ('' if path == '/' else path)
     e = lambda x: H.escape(x, quote=True)
     meta = [
@@ -139,13 +241,15 @@ def page(path, title, desc, image, ld=False, robots='index, follow'):
         '<meta name="twitter:image" content="%s">' % e(image),
         '<link rel="preload" href="%s" as="script">' % APP_URL,
     ]
-    if ld: meta.append('<script type="application/ld+json">%s</script>' % json.dumps(LD, ensure_ascii=False))
-    return '<!doctype html>\n<html lang="en-IN">\n<head>\n' + '\n'.join(meta) + '\n' + head_src + '\n</head>\n<body>\n' + body_prod + '\n</body>\n</html>\n'
+    for ld in lds.get(path, []):
+        meta.append('<script type="application/ld+json">%s</script>' % json.dumps(ld, ensure_ascii=False).replace('</', '<\\/'))
+    body = body_prod.replace('<div id="root"></div>', '<div id="root">%s</div>' % readable(pre['pages'][path]), 1)
+    return '<!doctype html>\n<html lang="en-IN">\n<head>\n' + '\n'.join(meta) + '\n' + head_src + '\n</head>\n<body>\n' + body + '\n</body>\n</html>\n'
 
 for path, title, desc, image, _ in routes:
     target = dep / 'index.html' if path == '/' else dep / path.strip('/') / 'index.html'
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(page(path, title, desc, image, ld=(path == '/')), encoding='utf-8')
+    target.write_text(page(path, title, desc, image), encoding='utf-8')
 (dep / '404.html').write_text(page('/404', 'Page not found | Jayastra', SITE_DESC, DOMAIN + '/og.png', robots='noindex'), encoding='utf-8')
 
 today = date.today().isoformat()
@@ -155,6 +259,31 @@ for path, _, _, _, pri in routes:
 sm.append('</urlset>')
 (dep / 'sitemap.xml').write_text('\n'.join(sm) + '\n', encoding='utf-8')
 (dep / 'robots.txt').write_text('User-agent: *\nAllow: /\n\nSitemap: %s/sitemap.xml\n' % DOMAIN, encoding='utf-8')
+
+# llms.txt: a plain summary of the studio for AI assistants (llmstxt.org), from the same data as the pages
+plain = lambda s: ' '.join(H.unescape(re.sub(r'<[^>]+>', ' ', s)).split())
+home = pre['pages']['/']
+pricing = home[home.index('id="pricing"'):home.index('id="faq"')]
+prices = []  # each plan heading in the pricing section, with the first paragraph after it that names a price
+for chunk in pricing.split('<h3')[1:]:
+    head, _, rest = chunk.partition('</h3>')
+    p = next((x for x in re.findall(r'<p[^>]*>(.*?)</p>', rest, re.S) if '₹' in x), None)
+    if p: prices.append((plain('<h3' + head), plain(p)))
+llms = ['# Jayastra', '', '> ' + SITE_DESC, '',
+        'Website: %s/' % DOMAIN, 'Email: hello@jayastra.com', 'Book a 30-minute call: ' + CAL_URL,
+        'Location: Jabalpur, Madhya Pradesh, India. Works with clients worldwide.', '', '## Services', '']
+for s, d, i in zip(data['SERVICE_SLUGS'], data['DISCIPLINES'], data['DISC_INFO']):
+    llms.append('- [%s](%s): %s Includes: %s.' % (d['name'], svc_url(s), i['text'], ', '.join(t for t, _ in d['items'])))
+if prices:
+    llms += ['', '## Pricing (starting points; the final price follows the scope)', '']
+    llms += ['- %s: %s' % (n, p) for n, p in prices]
+llms += ['', '## Case studies', '', 'These are concept projects.', '']
+llms += ['- [%s](%s/work/%s): %s. %s' % (c['name'], DOMAIN, c['slug'], c['services'], c['summary']) for c in data['CASES']]
+llms += ['', '## FAQ', '']
+for q, a in data['FAQS']: llms += ['### ' + q, '', a, '']
+llms += ['## Pages', '', '- [Home](%s/)' % DOMAIN, '- [All case studies](%s/work)' % DOMAIN,
+         '- [Privacy Policy](%s/privacy)' % DOMAIN, '- [Terms of Use](%s/terms)' % DOMAIN]
+(dep / 'llms.txt').write_text('\n'.join(llms) + '\n', encoding='utf-8')
 (dep / 'vercel.json').write_text(json.dumps({
     'cleanUrls': True, 'trailingSlash': False,
     'headers': [

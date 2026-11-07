@@ -369,6 +369,56 @@ footer[id] {
   background: var(--ink);
 }
 
+/* the page's text, written into the HTML at build time for search engines and AI crawlers; the app replaces it when it loads */
+.pre {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 120px 24px 80px;
+  font-family: var(--text);
+  line-height: 1.6;
+  color: var(--ink);
+}
+/* under the intro screen the text isn't seen anyway; keeping it invisible there stops it counting as a layout shift when the app replaces it */
+.boot-on ~ #root > .pre {
+  visibility: hidden;
+}
+.pre h1 {
+  font-family: var(--display);
+  font-size: clamp(36px, 6vw, 64px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+.pre h2 {
+  margin-top: 48px;
+  font-family: var(--display);
+  font-size: 28px;
+  letter-spacing: -0.02em;
+}
+.pre h3 {
+  margin-top: 24px;
+  font-size: 19px;
+}
+.pre p,
+.pre li,
+.pre dd {
+  color: var(--muted);
+}
+.pre a {
+  color: var(--brand-ink);
+}
+.pre ul,
+.pre ol {
+  padding-left: 20px;
+}
+.pre nav ul,
+.pre nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  list-style: none;
+  padding: 0;
+}
+
 /* a section that has not been built yet (App.jsx, Later): roughly one screen tall until it is */
 .later {
   min-height: 100vh;
@@ -382,7 +432,9 @@ footer[id] {
   z-index: 300;
   color: #fff;
 }
-.boot-quiet {
+/* the boot screen shows only where the intro will play (the script below the boot div adds .boot-on),
+   so other pages, and visitors without JavaScript, don't get a dark screen */
+.boot:not(.boot-on) {
   display: none !important;
 }
 .boot {
@@ -5605,13 +5657,13 @@ h4,
 <a class="skip" href="#main">Skip to content</a>
 <div id="boot" class="boot" aria-hidden="true"><span><i></i>Hello</span></div>
 <script>
-  /* The boot screen paints before the scripts arrive. Keep it only where the intro will play
+  /* The boot screen paints before the scripts arrive. Show it only where the intro will play
      (the home page, without reduced motion; same rule as App.jsx), so other pages don't flash dark. */
   (function () {
     try {
       var p = location.pathname.replace(/\/index\.html$/, '').replace(/\/+$/, '');
       var home = window.__ROUTING === 'path' ? !p || p === '/services' : (location.hash || '').indexOf('#/') !== 0;
-      if (!home || matchMedia('(prefers-reduced-motion: reduce)').matches) document.getElementById('boot').className += ' boot-quiet';
+      if (home && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.getElementById('boot').className += ' boot-on';
     } catch (e) { /* ignore */ }
   })();
 </script>

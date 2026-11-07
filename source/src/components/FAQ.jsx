@@ -6,7 +6,7 @@ import { Reveal, dot } from './shared';
 /* ======================================================================
    FAQ
    ====================================================================== */
-const FAQS = [
+export const FAQS = [
   [
     'How long does a typical project take?',
     'A brand identity runs 3–5 weeks, a website 4–8 weeks and a 3D render set 1–2 weeks. You get an exact timeline in the proposal before we start.',

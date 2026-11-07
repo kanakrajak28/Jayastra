@@ -9,6 +9,7 @@ Live at https://www.jayastra.com, deployed by Vercel from this repo.
 - `source/site/img/`: photos; `source/site/logo*.png`: logos.
 - `source/brand/`: favicons and the social share image.
 - `source/build.py`: builds `Jayastra/` (one pre-rendered page per URL, sitemap, robots, vercel.json).
+- `source/prerender.js` + `source/ssr-entry.jsx`: used by the build to render each page with React in Node, so every page's HTML contains its text (for Google and AI crawlers, which often don't run JavaScript). The build also writes the structured data (JSON-LD) and `llms.txt` from the same data. `source/.cache/` holds downloaded copies of React and Framer Motion for this; it's not committed.
 
 ## Where things are in `source/src/`
 | File | What it is |

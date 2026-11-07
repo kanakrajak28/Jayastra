@@ -1,0 +1,88 @@
+# Jayastra
+
+> Jayastra is an independent design studio in Jabalpur, India, for brand identity, websites, UI/UX, packaging and 3D product visuals, working with clients worldwide.
+
+Website: https://www.jayastra.com/
+Email: hello@jayastra.com
+Book a 30-minute call: https://cal.com/jayastra/30min
+Location: Jabalpur, Madhya Pradesh, India. Works with clients worldwide.
+
+## Services
+
+- [Research](https://www.jayastra.com/services/research): Research that turns what users do and say into decisions your team can act on. Includes: UX research, Usability testing, Heuristic analysis, Design audit, Ethnographic research, Emerging trends.
+- [Brand](https://www.jayastra.com/services/brand): Strategy, identity and packaging that give your business a clear point of view and a look people remember. Includes: Brand identity, Strategy & positioning, Rebranding, Logo refresh, Packaging, Packaging redesign, Print & collateral, Photography, Illustrations & iconography.
+- [Digital](https://www.jayastra.com/services/digital): Interfaces, websites and decks designed around how people actually read, click and decide. Includes: UI / UX design, Websites, Website redesign, App & product redesign, Pitch decks, E-commerce design, Design systems, Interaction design, Digital prototyping, AI design solutions.
+- [Build](https://www.jayastra.com/services/build): We build what we design, so the product that ships looks exactly like the one you approved. Includes: Front-end development, Web application development, Mobile application development, Custom application development, AI solution development, SaaS implementation.
+- [3D & motion](https://www.jayastra.com/services/3d-motion): Models, product renders and animation built in Blender, in-house. Show the product before it exists. Includes: 3D modelling, Product rendering, 3D animation, Motion graphics, Interior & architectural visuals.
+- [Growth](https://www.jayastra.com/services/growth): Social, ads and an ongoing retainer, built to a system so the work stays on-brand week after week. Includes: Social design, Ad creative, Design retainer, Reels & video editing, Email & newsletter design.
+
+## Pricing (starting points; the final price follows the scope)
+
+- Monthly retainer: ₹60,000 / month
+- Single project: One-off work with a defined start and finish. Sprints from ₹25,000, full projects from ₹1,20,000.
+
+## Case studies
+
+These are concept projects.
+
+- [Saffron & Co](https://www.jayastra.com/work/saffron-and-co): Identity · Packaging. A spice brand that looked like every other jar on the shelf, rebuilt as a premium pantry name.
+- [Veda Wellness](https://www.jayastra.com/work/veda-wellness): Packaging · Social system. Calm, clinical packaging and a social grid for a D2C skincare launch.
+- [Skyline Residences](https://www.jayastra.com/work/skyline-residences): 3D walkthroughs · Brochure. Selling a 120-unit tower before the foundation was poured.
+- [Courtyard Villas](https://www.jayastra.com/work/courtyard-villas): Project branding · Renders. A villa project in a tier-2 city positioned as a quiet luxury address.
+- [Ferro Machines](https://www.jayastra.com/work/ferro-machines): Product renders · Catalogue. A 40-year-old machine maker with a catalogue still built from factory-floor photos.
+- [Volta Components](https://www.jayastra.com/work/volta-components): Website redesign · Identity refresh. A B2B component supplier whose website was losing enquiries to newer competitors.
+- [Kesari Jewels](https://www.jayastra.com/work/kesari-jewels): 3D jewellery renders · E-commerce. Bridal jewellery shown online the way it looks in the hand.
+- [Loom & Thread](https://www.jayastra.com/work/loom-and-thread): Lookbook · Packaging. A handloom label moving from exhibitions to its own online store.
+- [Northbrook](https://www.jayastra.com/work/northbrook): Product UI · Website. Turning a dense finance dashboard into something a founder can read in ten seconds.
+- [Ledgerly](https://www.jayastra.com/work/ledgerly): App UI · Pitch deck. A mobile-first invoicing app for freelancers, from idea to investor meeting.
+- [Dough & Co](https://www.jayastra.com/work/dough-and-co): Packaging · Social media. An artisan bakery taking its breads into supermarket shelves.
+- [Third Wave Coffee](https://www.jayastra.com/work/third-wave-coffee): Identity · Ad creative. A specialty coffee roaster launching retail beans and subscription boxes.
+- [CarePlus Clinics](https://www.jayastra.com/work/careplus-clinics): Branding · Website. A chain of neighbourhood clinics that wanted to feel as trusted as a hospital.
+- [Ayur Roots](https://www.jayastra.com/work/ayur-roots): Packaging · App UI. Ayurvedic wellness products redesigned for a younger online audience.
+- [Brightpath Academy](https://www.jayastra.com/work/brightpath-academy): Branding · Website. A coaching institute growing from one centre to five.
+- [LearnLoop](https://www.jayastra.com/work/learnloop): App UI · Explainer animation. A course platform that needed to explain itself in under a minute.
+- [Parcel](https://www.jayastra.com/work/parcel): Brand from zero · MVP design. A logistics startup, from a name on a napkin to a working MVP.
+- [Tilt Capital](https://www.jayastra.com/work/tilt-capital): Pitch deck · Design retainer. An early-stage fund that wanted its decks to look as sharp as its thesis.
+- [Lumen Audio](https://www.jayastra.com/work/lumen-audio): 3D product rendering. Launching a headphone line without a single studio photo shoot.
+- [Orbit Mobility](https://www.jayastra.com/work/orbit-mobility): 3D modelling · Launch film. An electric scooter brand showing the product before the factory finished it.
+- [Clay House Café](https://www.jayastra.com/work/clay-house-cafe): Identity · Menus · Signage. A neighbourhood café with a cult following and no brand to match.
+- [Fig & Co](https://www.jayastra.com/work/fig-and-co): Retail identity · Print. A concept store bringing local makers under one roof.
+- [Marble Palace Stays](https://www.jayastra.com/work/marble-palace-stays): Destination branding · Website. A heritage hotel near Bhedaghat positioned for international travellers.
+- [Kanha Trails](https://www.jayastra.com/work/kanha-trails): Motion content · Print. A safari lodge telling its story beyond the brochure.
+- [Pixel Forge](https://www.jayastra.com/work/pixel-forge): 3D assets · Key art. Store-page key art and 3D assets for an indie studio’s first release.
+- [Stagecraft Live](https://www.jayastra.com/work/stagecraft-live): Motion graphics · Social. Motion graphics for a live music and streaming event series.
+- [The Rao Wedding](https://www.jayastra.com/work/the-rao-wedding): Invitations · Event branding. A three-day wedding with one visual story from invitation to farewell.
+- [Summit ’26](https://www.jayastra.com/work/summit-26): Event branding · 3D venue preview. A business summit that needed sponsors before the venue was dressed.
+
+## FAQ
+
+### How long does a typical project take?
+
+A brand identity runs 3–5 weeks, a website 4–8 weeks and a 3D render set 1–2 weeks. You get an exact timeline in the proposal before we start.
+
+### Do you work with clients outside India?
+
+Yes. We work remotely across time zones, keep a fixed weekly call slot that suits yours, and invoice in INR or USD.
+
+### What do you need from us to start?
+
+A short brief, any existing brand material and one decision-maker who can approve work. We send the questionnaire.
+
+### How many revisions are included?
+
+Two structured rounds per deliverable. Beyond that we bill hourly, which rarely happens because feedback is collected in one place.
+
+### Can you render a product that doesn't exist yet?
+
+Yes, that is what 3D is for. Send CAD files, technical drawings or dimensioned sketches and we build it in Blender.
+
+### What are your payment terms?
+
+50% to book the slot and 50% on delivery. Retainers are billed monthly in advance.
+
+## Pages
+
+- [Home](https://www.jayastra.com/)
+- [All case studies](https://www.jayastra.com/work)
+- [Privacy Policy](https://www.jayastra.com/privacy)
+- [Terms of Use](https://www.jayastra.com/terms)
